@@ -1,14 +1,17 @@
+import format from 'date-fns/format';
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
 import { Appbar as PaperAppbar } from 'react-native-paper';
 
 const Appbar = (props) => {
+    const dateString = format(new Date(), 'MMM yyyy');
+
     return (
-        <PaperAppbar style={styles.root}>
-            <PaperAppbar.Header style={styles.header}>
-                <PaperAppbar.Content title='TimeFlex' color='red' />
-            </PaperAppbar.Header>
-        </PaperAppbar >
+        <PaperAppbar.Header style={styles.root}>
+            <PaperAppbar.Action icon={'menu'} onPress={() => { }} />
+            <PaperAppbar.Content title={dateString} />
+            <PaperAppbar.Action icon={'calendar-today'} onPress={() => { }} />
+        </PaperAppbar.Header >
     );
 }
 
@@ -20,9 +23,10 @@ const styles = StyleSheet.create({
     header: {
         elevation: 0,
         backgroundColor: '#fff',
+        display: 'flex',
     },
-    content: {
-        color: 'red'
+    title: {
+        textAlign: 'center'
     }
 });
 

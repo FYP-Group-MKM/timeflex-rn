@@ -3,6 +3,7 @@ import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { StyleSheet, SafeAreaView } from 'react-native';
 import { Calendar } from 'react-native-big-calendar';
 import Appbar from './components/Appbar';
+import Drawer from './components/Drawer';
 
 const events = [
     {
@@ -22,6 +23,7 @@ const App = () => {
         <SafeAreaView style={styles.container}>
             <ExpoStatusBar style="auto" />
             <Appbar />
+            <Drawer />
             <Calendar events={events} date={new Date()} mode='week' height={1} />
         </SafeAreaView>
     );

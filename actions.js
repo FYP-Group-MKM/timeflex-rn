@@ -14,7 +14,7 @@ export const setCurrentView = (view) => {
     };
 };
 
-export const setappointmentForm = (isOpen) => {
+export const setAppointmentForm = (isOpen) => {
     return {
         type: 'SET_SIMPLE_EVENT_FORM',
         payload: isOpen,
