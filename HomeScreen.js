@@ -20,14 +20,14 @@ const events = [
     },
 ];
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation, mode }) => {
     return (
         <SafeAreaView style={styles.container}>
             <Appbar navigation={navigation} />
-            <Calendar events={events} date={new Date()} mode='week' height={1} />
+            <Calendar events={events} date={new Date()} mode={mode} height={1} />
         </SafeAreaView>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {

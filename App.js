@@ -24,20 +24,21 @@ const events = [
 const Drawer = createDrawerNavigator();
 
 const App = () => {
-    const renderHomeScreen = ({ navigation }) => {
-        return <HomeScreen navigation={navigation} />;
-    };
+    const renderRoutes = ['day', '3days', 'week'].map(mode => {
+        const renderScreen = ({ navigation }) => <HomeScreen navigation={navigation} mode={mode} />;
+        return <Drawer.Screen key={mode} name={mode} component={renderScreen} />;
+    });
 
     return (
         <SafeAreaView style={styles.container}>
             <NavigationContainer>
                 <Drawer.Navigator initialRouteName="week">
-                    <Drawer.Screen name="week" component={renderHomeScreen} />
+                    {renderRoutes}
                 </Drawer.Navigator>
             </NavigationContainer>
         </SafeAreaView>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
