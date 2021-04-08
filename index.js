@@ -12,12 +12,12 @@ const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(thunk
 
 export default function Main() {
     return (
-        <StoreProvider store={store}>
+        <StoreProvider store={store} >
             <PaperProvider>
-                <App />
+                <App store={store} />
             </PaperProvider>
         </StoreProvider>
     );
 }
 
-AppRegistry.registerComponent(App, () => Main);
+AppRegistry.registerComponent('TimeFlex', () => Main);

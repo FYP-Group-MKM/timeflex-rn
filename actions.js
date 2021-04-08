@@ -1,5 +1,3 @@
-const PORT = process.env.PORT || 5000;
-
 export const setCurrentDate = (date) => {
     return {
         type: 'SET_CURRENT_DATE',

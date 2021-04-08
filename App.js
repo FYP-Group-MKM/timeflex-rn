@@ -5,8 +5,7 @@ import { Calendar } from 'react-native-big-calendar';
 import Appbar from './components/Appbar';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
-import HomeScreen from './HomeScreen';
-
+import { connect } from 'react-redux';
 
 const events = [
     {
@@ -23,20 +22,33 @@ const events = [
 
 const Drawer = createDrawerNavigator();
 
-const App = () => {
-    const renderRoutes = ['day', '3days', 'week'].map(mode => {
-        const renderScreen = ({ navigation }) => <HomeScreen navigation={navigation} mode={mode} />;
-        return <Drawer.Screen key={mode} name={mode} component={renderScreen} />;
+const App = (props) => {
+    const routes = ['day', '3days', 'week'].map(mode => {
+        const renderScreen = ({ navigation }) => (
+            <SafeAreaView style={styles.container}>
+                <Appbar navigation={navigation} />
+                <Calendar
+                    events={events}
+                    date={currentDate}
+                    mode={mode}
+                    height={1}
+                />
+            </SafeAreaView >
+        );
+        let name;
+        if (mode === 'day') name = 'Days';
+        if (mode === '3days') name = '3 Days';
+        if (mode === 'week') name = 'Week';
+        return <Drawer.Screen key={mode} name={name} component={renderScreen} />;
     });
 
     return (
-        <SafeAreaView style={styles.container}>
-            <NavigationContainer>
-                <Drawer.Navigator initialRouteName="week">
-                    {renderRoutes}
-                </Drawer.Navigator>
-            </NavigationContainer>
-        </SafeAreaView>
+        <NavigationContainer>
+            <ExpoStatusBar style='auto' />
+            <Drawer.Navigator initialRouteName="week">
+                {routes}
+            </Drawer.Navigator>
+        </NavigationContainer>
     );
 };
 
@@ -48,4 +60,8 @@ const styles = StyleSheet.create({
     },
 });
 
-export default App;
+const mapStateToProps = (state) => ({
+    currentDate: state.calendar.currentDate,
+});
+
+export default connect(mapStateToProps)(App);
