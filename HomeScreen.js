@@ -5,7 +5,6 @@ import { Calendar } from 'react-native-big-calendar';
 import Appbar from './components/Appbar';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
-import HomeScreen from './HomeScreen';
 
 
 const events = [
@@ -21,20 +20,11 @@ const events = [
     },
 ];
 
-const Drawer = createDrawerNavigator();
-
-const App = () => {
-    const renderHomeScreen = ({ navigation }) => {
-        return <HomeScreen navigation={navigation} />;
-    };
-
+const HomeScreen = ({ navigation }) => {
     return (
         <SafeAreaView style={styles.container}>
-            <NavigationContainer>
-                <Drawer.Navigator initialRouteName="week">
-                    <Drawer.Screen name="week" component={renderHomeScreen} />
-                </Drawer.Navigator>
-            </NavigationContainer>
+            <Appbar navigation={navigation} />
+            <Calendar events={events} date={new Date()} mode='week' height={1} />
         </SafeAreaView>
     );
 }
@@ -47,4 +37,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default App;
+export default HomeScreen;
