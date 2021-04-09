@@ -1,7 +1,18 @@
 const initialState = {
     user: {},
     authenticated: false,
-    appointments: [],
+    appointments: [
+        {
+            title: 'Meeting',
+            start: new Date(2021, 3, 9, 10, 0),
+            end: new Date(2021, 3, 9, 10, 30),
+        },
+        {
+            title: 'Coffee break',
+            start: new Date(2021, 3, 9, 15, 45),
+            end: new Date(2021, 3, 9, 16, 30),
+        },
+    ],
     loading: false,
     error: ""
 }
