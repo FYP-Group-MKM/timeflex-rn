@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useEffect} from 'react';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { StyleSheet, SafeAreaView, Drawer as PaperDrawer } from 'react-native';
 import { Calendar } from 'react-native-big-calendar';
@@ -6,6 +6,32 @@ import Appbar from './components/Appbar';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import { connect } from 'react-redux';
+import * as SQLite from 'expo-sqlite';
+
+const db = SQLite.openDatabase('db.db');
+
+const addAppointment = (appointment) =>{
+    db.transaction( tx => {
+        tx.executeSql('insert into appointment (title, startdate ,enddate,description) values (0, ?)',[])
+        tx.executeSql('Retrive')
+    })
+}
+const add = (text) => {
+    // is text empty?
+    if (text === null || text === '') {
+      return false;
+    }
+
+    db.transaction(
+      tx => {
+        tx.executeSql('insert into appointment (done, value) values (0, ?)', [text]);
+        tx.executeSql('select * from appointment', [], (_, { rows }) =>
+          console.log(JSON.stringify(rows))
+        );
+      },
+      null,
+    );
+  }
 
 const events = [
     {
@@ -23,6 +49,15 @@ const events = [
 const Drawer = createDrawerNavigator();
 
 const App = (props) => {
+    // Create DB and Table for local storeage when the app start
+    useEffect(() => {
+        db.transaction(tx => {
+            tx.executeSql(
+                'create table if not exists appointment (id integer primary key not null, title text, startdate text, enddate text, description text);',[], () => console.log(`Create Database sucess`),()=> console.log(`Create DataBase Fail`)
+            )
+
+        })
+    },[])
 
     const routes = ['day', '3days', 'week'].map(mode => {
         const renderScreen = ({ navigation }) => (
