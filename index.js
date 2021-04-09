@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppRegistry } from 'react-native';
+import { AppRegistry, Text } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { Provider as StoreProvider } from 'react-redux';
 import { composeWithDevTools } from 'redux-devtools-extension';
@@ -10,14 +10,16 @@ import App from './App';
 
 const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(thunk)));
 
-export default function Main() {
+const Main = () => {
     return (
         <StoreProvider store={store} >
             <PaperProvider>
-                <App store={store} />
+                {/* <Text>Fuck u</Text> */}
+                <App />
             </PaperProvider>
         </StoreProvider>
     );
 }
 
-AppRegistry.registerComponent('TimeFlex', () => Main);
+AppRegistry.registerComponent('timeflex-rn', () => Main);
+export default Main;

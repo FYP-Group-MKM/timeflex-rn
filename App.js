@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
 import { StyleSheet, SafeAreaView, View } from 'react-native';
 import { Calendar } from 'react-native-big-calendar';
@@ -23,13 +23,14 @@ const events = [
 const Drawer = createDrawerNavigator();
 
 const App = (props) => {
+
     const routes = ['day', '3days', 'week'].map(mode => {
         const renderScreen = ({ navigation }) => (
             <SafeAreaView style={styles.container}>
                 <Appbar navigation={navigation} />
                 <Calendar
                     events={events}
-                    date={currentDate}
+                    date={props.currentDate}
                     mode={mode}
                     height={1}
                 />
@@ -51,6 +52,7 @@ const App = (props) => {
         </NavigationContainer>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
