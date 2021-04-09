@@ -1,41 +1,16 @@
 import React from 'react';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
-import { StyleSheet, SafeAreaView, Drawer as PaperDrawer } from 'react-native';
-import { Calendar } from 'react-native-big-calendar';
-import Appbar from './components/Appbar';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import { connect } from 'react-redux';
+import HomeScreen from './screens/HomeScreen';
 
-const events = [
-    {
-        title: 'Meeting',
-        start: new Date(2021, 3, 9, 10, 0),
-        end: new Date(2021, 3, 9, 10, 30),
-    },
-    {
-        title: 'Coffee break',
-        start: new Date(2021, 3, 9, 15, 45),
-        end: new Date(2021, 3, 9, 16, 30),
-    },
-];
 
 const Drawer = createDrawerNavigator();
 
 const App = (props) => {
-
-    const routes = ['day', '3days', 'week'].map(mode => {
-        const renderScreen = ({ navigation }) => (
-            <SafeAreaView style={styles.container}>
-                <Appbar navigation={navigation} />
-                <Calendar
-                    events={events}
-                    date={props.currentDate}
-                    mode={mode}
-                    height={1}
-                />
-            </SafeAreaView >
-        );
+    const routes = ['week', '3days', 'day'].map(mode => {
+        const renderScreen = ({ navigation }) => <HomeScreen navigation={navigation} mode={mode} />
         let name;
         if (mode === 'day') name = 'Days';
         if (mode === '3days') name = '3 Days';
@@ -43,43 +18,18 @@ const App = (props) => {
         return <Drawer.Screen key={mode} name={name} component={renderScreen} />;
     });
 
-    const Home = ({ navigation }) => (
-        <SafeAreaView style={styles.container}>
-            <Appbar navigation={navigation} />
-            <Calendar
-                events={events}
-                date={props.currentDate}
-                mode={props.currentView}
-                height={1}
-            />
-        </SafeAreaView >
-    );
-
     return (
         <NavigationContainer>
             <ExpoStatusBar style='auto' />
-            <Drawer.Navigator initialRouteName='TimeFlex'>
-                <Drawer.Screen name='TimeFlex' component={Home} />
-            </Drawer.Navigator>
-            {/* <Drawer.Navigator initialRouteName="week">
+            <Drawer.Navigator>
                 {routes}
-            </Drawer.Navigator> */}
+            </Drawer.Navigator>
         </NavigationContainer>
     );
 };
 
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        justifyContent: 'center',
-    },
-});
-
 const mapStateToProps = (state) => ({
     currentDate: state.calendar.currentDate,
-    currentView: state.calendar.currentView,
 });
 
 export default connect(mapStateToProps)(App);
