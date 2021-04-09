@@ -12,37 +12,25 @@ const db = SQLite.openDatabase('db.db');
 
 const addAppointment = (appointment) =>{
     db.transaction( tx => {
-        tx.executeSql('insert into appointment (title, startdate ,enddate,description) values (0, ?)',[])
-        tx.executeSql('Retrive')
-    })
-}
-const add = (text) => {
-    // is text empty?
-    if (text === null || text === '') {
-      return false;
-    }
-
-    db.transaction(
-      tx => {
-        tx.executeSql('insert into appointment (done, value) values (0, ?)', [text]);
+        tx.executeSql(`insert into appointment (title, startdate ,enddate,description) values (${appointment.title},${appointment.startdate},${appointment.enddate},${appointment.description} )`,[], ()=> console.log('sucess'),()=>console.log('add fail'))
         tx.executeSql('select * from appointment', [], (_, { rows }) =>
           console.log(JSON.stringify(rows))
         );
-      },
-      null,
-    );
-  }
+    })
+}
 
 const events = [
     {
         title: 'Meeting',
         start: new Date(2021, 3, 9, 10, 0),
         end: new Date(2021, 3, 9, 10, 30),
+        description: 'Hello'
     },
     {
         title: 'Coffee break',
         start: new Date(2021, 3, 9, 15, 45),
         end: new Date(2021, 3, 9, 16, 30),
+        description: 'Hello'
     },
 ];
 
