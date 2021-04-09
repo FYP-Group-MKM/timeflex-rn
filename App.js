@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
-import { StyleSheet, SafeAreaView, View } from 'react-native';
+import { StyleSheet, SafeAreaView, Drawer as PaperDrawer } from 'react-native';
 import { Calendar } from 'react-native-big-calendar';
 import Appbar from './components/Appbar';
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -43,12 +43,27 @@ const App = (props) => {
         return <Drawer.Screen key={mode} name={name} component={renderScreen} />;
     });
 
+    const Home = ({ navigation }) => (
+        <SafeAreaView style={styles.container}>
+            <Appbar navigation={navigation} />
+            <Calendar
+                events={events}
+                date={props.currentDate}
+                mode={props.currentView}
+                height={1}
+            />
+        </SafeAreaView >
+    );
+
     return (
         <NavigationContainer>
             <ExpoStatusBar style='auto' />
-            <Drawer.Navigator initialRouteName="week">
-                {routes}
+            <Drawer.Navigator initialRouteName='TimeFlex'>
+                <Drawer.Screen name='TimeFlex' component={Home} />
             </Drawer.Navigator>
+            {/* <Drawer.Navigator initialRouteName="week">
+                {routes}
+            </Drawer.Navigator> */}
         </NavigationContainer>
     );
 };
@@ -64,6 +79,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = (state) => ({
     currentDate: state.calendar.currentDate,
+    currentView: state.calendar.currentView,
 });
 
 export default connect(mapStateToProps)(App);

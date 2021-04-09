@@ -1,6 +1,6 @@
 const initialState = {
     currentDate: new Date(),
-    currentView: "Week"
+    currentView: 'week'
 }
 
 const calendarReducer = (state = initialState, action) => {
