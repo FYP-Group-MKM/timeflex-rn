@@ -15,38 +15,36 @@ export const createTable = (db) => {
 //Add item to the table, db is the database object created by SQLite db.openDatabase, appointment is a object.
 export const addAppointment = (db,appointment) =>{
     db.transaction( tx => {
-        tx.executeSql(`insert into appointment (title, startdate ,enddate,description) values (${appointment.title},${appointment.startdate},${appointment.enddate},${appointment.description} )`,[], ()=> console.log('sucess'),()=>console.log('add fail'))
-        tx.executeSql('select * from appointment', [], (_, { rows }) =>
-          console.log(JSON.stringify(rows))
-        );
+        tx.executeSql('insert into appointment (title, startdate ,enddate,description) values (?,?,?,?);',[appointment.title,appointment.startdate,appointment.enddate,appointment.description],()=> console.log('ADD Appointment sucess'),(error)=>console.log(error))
+        
     })
 }
 
 export const updateAppointment = (db,id,appointment) => {
     db.transaction(tx => {
-        tx.executeSql(`update appointment SET title = ${appointment.title}, startdate = ${appointment.startdate},enddate = ${appointment.enddate},description = ${appointment.description} where id = ?` ,[id])
+        tx.executeSql('update appointment SET title = ?, startdate = ?,enddate = ?,description = ? where id = ?' ,[appointment.title,appointment.startdate,appointment.enddate,appointment.description,id],() => console.log('Update Sucess'), () => console.log('Update Fail'))
     })
 
 }
 
 export const deleteAppointment = (db,id) => {
     db.transaction(tx => {
-        tx.executeSql('delete from appointment where id = ?',[id])
+        tx.executeSql('delete from appointment where id = ?',[id],()=>console.log('Delete Sucess'),() => console.log('Delete Fail'))
     } )
 }
 
 export const fetchAppointment = (db) =>{
     db.transaction(tx => {
         tx.executeSql('select * from appointment', [], (_, { rows }) =>
-          console.log(JSON.stringify(rows))
+          console.log('Read all Sucess',JSON.stringify(rows)), ()=> console.log('error')
         );
     
     } )
 }
-export const readOneAppointment = (db) => {
+export const readOneAppointment = (db,id) => {
     db.transaction(tx => {
         tx.executeSql('select * from appointment where id = ?', [id], (_, { rows }) =>
-          console.log(JSON.stringify(rows))
+          console.log('read one data sucess',JSON.stringify(rows))
         );
     
     } )
