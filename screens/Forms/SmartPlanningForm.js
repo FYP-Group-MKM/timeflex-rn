@@ -144,7 +144,7 @@ const SmartPlanningForm = (props) => {
                     <TextInput
                         mode='outlined'
                         label="Expected Duration"
-                        value={appointment.exDuration}
+                        value={appointment.exDuration ? appointment.exDuration.toString() : ''}
                         error={validity.exDurationIsEmpty}
                         dense
                         onChangeText={handleExDurationInput}

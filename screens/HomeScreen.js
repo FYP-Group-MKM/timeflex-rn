@@ -39,7 +39,7 @@ const HomeScreen = (props) => {
                         {
                             icon: 'school',
                             label: 'Class',
-                            onPress: () => console.log('Pressed star'),
+                            onPress: () => { },
                         },
                         {
                             icon: 'calendar-search',
