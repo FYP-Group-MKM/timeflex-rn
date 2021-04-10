@@ -15,6 +15,14 @@ const HomeScreen = (props) => {
     const [fabOpen, setFabOpen] = useState(false);
     const dateString = format(props.currentDate, 'MMM yyyy');
 
+    const translatedAppointments = props.appointments.map(appointment => {
+        return {
+            ...appointment,
+            start: appointment.startDate,
+            end: appointment.endDate,
+        };
+    });
+
     return (
         <SafeAreaView style={styles.container}>
             <PaperAppbar.Header style={styles.appbar}>
@@ -23,7 +31,7 @@ const HomeScreen = (props) => {
                 <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
             </PaperAppbar.Header >
             <Calendar
-                events={props.appointments}
+                events={translatedAppointments}
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}

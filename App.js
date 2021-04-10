@@ -5,7 +5,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { connect } from 'react-redux';
 import HomeScreen from './screens/HomeScreen';
 
-
 const Drawer = createDrawerNavigator();
 
 const App = (props) => {
