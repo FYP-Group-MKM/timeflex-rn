@@ -1,18 +1,23 @@
-import addHours from 'date-fns/addHours';
+import setHours from 'date-fns/setHours';
 import setMinutes from 'date-fns/setMinutes';
+import addWeeks from 'date-fns/addWeeks';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { TextInput, Button, Switch, Text, Snackbar, Headline, Subheading } from 'react-native-paper';
+import { TextInput, Button, Switch, Text, Snackbar, Subheading, Headline, Paragraph } from 'react-native-paper';
 import BottomSheet from 'reanimated-bottom-sheet';
+
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 
-const SimpleEventForm = (props) => {
+
+const SmartPlanningForm = (props) => {
     const [appointment, setAppointment] = useState({
         title: '',
-        startDate: setMinutes(addHours(new Date(), 1), 0),
-        endDate: setMinutes(addHours(new Date(), 2), 0),
-        allDay: false,
-        description: ''
+        deadline: addWeeks(setMinutes(setHours(new Date(), 0), 0), 1),
+        exDuration: null,
+        divisible: true,
+        minSession: 1,
+        maxSession: '',
+        description: '',
     });
     const [validity, setValidity] = useState({});
     const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -20,9 +25,10 @@ const SimpleEventForm = (props) => {
 
     const handleTitleInput = (text) => setAppointment({ ...appointment, title: text });
     const handleDescriptionInput = (text) => setAppointment({ ...appointment, description: text });
-    const handleAllDaySwitchToggle = () => setAppointment({ ...appointment, allDay: !appointment.allDay });
-    const handleStartDateInput = (date) => setAppointment({ ...appointment, startDate: date });
-    const handlEendDateInput = (date) => setAppointment({ ...appointment, endDate: date });
+    const handleDivisibleSwitchToggle = () => setAppointment({ ...appointment, divisible: !appointment.divisible });
+    const handleDeadlineInput = (date) => setAppointment({ ...appointment, deadline: date });
+    const handleMinSessionInput = (val) => setAppointment({ ...appointment, minSession: Number(val) });
+    const handleMaxSessionInput = (val) => setAppointment({ ...appointment, maxSession: Number(val) });
 
     const renderHeader = () => (
         <View style={styles.header}>
@@ -46,21 +52,17 @@ const SimpleEventForm = (props) => {
                 ...appointment
             }),
         });
-
-        props.sheetRef.current.snapTo(1);
-        resetAppointment();
     };
 
     const resetAppointment = () => setAppointment({
         title: '',
-        startDate: setMinutes(addHours(new Date(), 1), 0),
-        endDate: setMinutes(addHours(new Date(), 2), 0),
-        allDay: false,
-        description: ''
+        deadline: addWeeks(setMinutes(setHours(new Date(), 0), 0), 1),
+        divisible: true,
+        description: '',
     });
 
     const appointmentIsValid = () => {
-        const { title, startDate, endDate } = appointment;
+        const { title, deadline, exDuration, divisible, minSession, maxSession } = appointment;
         let newValidity = {};
         let isValid = true;
 
@@ -69,31 +71,30 @@ const SimpleEventForm = (props) => {
             isValid = false;
         }
 
-        if (startDate < new Date()) {
-            newValidity.invalidDate = true;
+        if (deadline < new Date()) {
+            newValidity.invalidDeadline = true;
             isValid = false;
-            setInvalidDateMsg('An event cannot be in the past');
-            setSnackbarVisible(true);
+            alert("The deadline must be in the future");
         }
 
-        if (endDate < new Date()) {
-            newValidity.invalidDate = true;
+        if (!exDuration) {
+            newValidity.exDurationIsEmpty = true;
             isValid = false;
-            setInvalidDateMsg('An event cannot be in the past');
-            setSnackbarVisible(true);
         }
 
-        if (startDate > endDate) {
-            newValidity.invalidDate = true;
+        if (divisible && !maxSession) {
+            newValidity.maxSessionIsEmpty = true;
             isValid = false;
-            setInvalidDateMsg('An event cannot start later than it ends');
-            setSnackbarVisible(true);
+        }
+
+        if (divisible && !minSession) {
+            newValidity.minSessionIsEmpty = true;
+            isValid = false;
         }
 
         setValidity(newValidity);
         return isValid;
     };
-
 
     return (
         <BottomSheet
@@ -105,9 +106,10 @@ const SimpleEventForm = (props) => {
             renderContent={() => (
                 <View style={styles.root}>
                     <View style={styles.formTitle}>
-                        <Headline>Simple Event</Headline>
+                        <Headline>Smart Planning</Headline>
                         <Button onPress={handleSubmit}>Create</Button>
                     </View>
+                    <Paragraph>There is a smart planning algorithm in TimeFlex, which will help you find a timeslot for your task.</Paragraph>
                     <TextInput
                         mode='outlined'
                         dense
@@ -117,13 +119,39 @@ const SimpleEventForm = (props) => {
                         error={validity.titleIsEmpty}
                         onChangeText={handleTitleInput}
                     />
-                    <View>
-                        <View style={styles.switch}>
-                            <Switch value={appointment.allDay} onValueChange={handleAllDaySwitchToggle} />
-                            <Subheading>All Day</Subheading>
-                        </View>
-                        <ButtonDateTimePicker date={appointment.startDate} handleDateSelect={handleStartDateInput} />
-                        <ButtonDateTimePicker date={appointment.endDate} handleDateSelect={handlEendDateInput} />
+                    <View style={styles.deadline}>
+                        <Subheading>Deadline</Subheading>
+                        <ButtonDateTimePicker date={appointment.deadline} handleDateSelect={handleDeadlineInput} />
+                    </View>
+                    <View style={styles.switch}>
+                        <Switch value={appointment.divisible} onValueChange={handleDivisibleSwitchToggle} />
+                        <Subheading>Divisible</Subheading>
+                    </View>
+                    <TextInput
+                        mode='outlined'
+                        label="Expected Duration"
+                        error={validity.exDurationIsEmpty}
+                        value={appointment.exDuration}
+                        dense
+                        onChangeText={handleDescriptionInput}
+                    />
+                    <View style={styles.sessionTextInputRow}>
+                        <TextInput
+                            mode='outlined'
+                            label="Minimum Session"
+                            value={appointment.minSession.toString()}
+                            dense
+                            style={styles.sessionTextInput}
+                            onChangeText={handleMinSessionInput}
+                        />
+                        <TextInput
+                            mode='outlined'
+                            label="Maximum Session"
+                            value={appointment.maxSession.toString()}
+                            dense
+                            style={styles.sessionTextInput}
+                            onChangeText={handleMaxSessionInput}
+                        />
                     </View>
                     <TextInput
                         mode='outlined'
@@ -164,12 +192,20 @@ const styles = StyleSheet.create({
     eventTitle: {
         marginBottom: 20,
     },
-    switch: {
+    deadline: {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
         maxWidth: 120,
+        marginBottom: 20,
+    },
+    switch: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        maxWidth: 130,
         marginBottom: 20,
     },
     datePicker: {
@@ -183,6 +219,15 @@ const styles = StyleSheet.create({
     },
     snackbar: {
         width: '104%'
+    },
+    sessionTextInputRow: {
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between'
+    },
+    sessionTextInput: {
+        marginTop: 15,
+        width: '48%'
     },
     header: {
         backgroundColor: '#FFFFFF',
@@ -208,4 +253,4 @@ const styles = StyleSheet.create({
 });
 
 
-export default SimpleEventForm;
+export default SmartPlanningForm;
