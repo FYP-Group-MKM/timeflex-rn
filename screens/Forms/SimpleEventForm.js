@@ -2,9 +2,10 @@ import addHours from 'date-fns/addHours';
 import setMinutes from 'date-fns/setMinutes';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { TextInput, Button, Switch, Text, Snackbar, Headline, Subheading } from 'react-native-paper';
+import { TextInput, Button, Switch, Snackbar, Headline, Subheading } from 'react-native-paper';
 import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
+
 
 const SimpleEventForm = (props) => {
     const [appointment, setAppointment] = useState({
