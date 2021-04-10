@@ -38,14 +38,14 @@ const Drawer = createDrawerNavigator();
 
 const App = (props) => {
     // Create DB and Table for local storeage when the app start
-    useEffect(() => {
-        db.transaction(tx => {
-            tx.executeSql(
-                'create table if not exists appointment (id integer primary key not null, title text, startdate text, enddate text, description text);',[], () => console.log(`Create Database sucess`),()=> console.log(`Create DataBase Fail`)
-            )
+    // useEffect(() => {
+    //     db.transaction(tx => {
+    //         tx.executeSql(
+    //             'create table if not exists appointment (id integer primary key not null, title text, startdate text, enddate text, description text);',[], () => console.log(`Create Database sucess`),()=> console.log(`Create DataBase Fail`)
+    //         )
 
-        })
-    },[])
+    //     })
+    // },[])
 
     const routes = ['day', '3days', 'week'].map(mode => {
         const renderScreen = ({ navigation }) => (
