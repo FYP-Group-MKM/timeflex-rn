@@ -53,6 +53,14 @@ const SimpleEventForm = (props) => {
         });
     };
 
+    const resetAppointment = () => setAppointment({
+        title: '',
+        startDate: setMinutes(addHours(new Date(), 1), 0),
+        endDate: setMinutes(addHours(new Date(), 2), 0),
+        allDay: false,
+        description: ''
+    });
+
     const appointmentIsValid = () => {
         const { title, startDate, endDate } = appointment;
         let newValidity = {};
@@ -94,6 +102,7 @@ const SimpleEventForm = (props) => {
             ref={props.sheetRef}
             initialSnap={2}
             snapPoints={['95%', '50%', 0]}
+            onCloseEnd={resetAppointment}
             renderHeader={renderHeader}
             renderContent={() => (
                 <View style={styles.root}>
