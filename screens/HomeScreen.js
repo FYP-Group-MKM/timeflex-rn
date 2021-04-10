@@ -1,17 +1,17 @@
 import format from 'date-fns/format';
 import React, { useState } from 'react';
-import { StyleSheet, SafeAreaView, View, Text } from 'react-native';
-import { FAB, Portal, Appbar as PaperAppbar, TextInput, Button, Switch } from 'react-native-paper';
+import { StyleSheet, SafeAreaView } from 'react-native';
+import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
 import { connect } from 'react-redux';
 import { setCurrentDate } from '../actions';
-import Animated from 'react-native-reanimated';
-import BottomSheet from 'reanimated-bottom-sheet';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
+import SmartPlanningForm from './Forms/SmartPlanningForm';
 
 const HomeScreen = (props) => {
-    const sheetRef = React.useRef(null);
+    const simpleEventFormRef = React.useRef(null);
+    const smartPlanningFormRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
     const dateString = format(props.currentDate, 'MMM yyyy');
 
@@ -29,7 +29,8 @@ const HomeScreen = (props) => {
                 height={1}
             />
             <Portal>
-                <SimpleEventForm sheetRef={sheetRef} />
+                <SimpleEventForm sheetRef={simpleEventFormRef} />
+                <SmartPlanningForm sheetRef={smartPlanningFormRef} />
                 <FAB.Group
                     open={fabOpen}
                     icon={fabOpen ? 'close' : 'plus'}
@@ -43,14 +44,12 @@ const HomeScreen = (props) => {
                         {
                             icon: 'calendar-search',
                             label: 'Smart Planning',
-                            onPress: () => console.log('Pressed star'),
+                            onPress: () => smartPlanningFormRef.current.snapTo(0),
                         },
                         {
                             icon: 'calendar-edit',
                             label: 'Simple Event',
-                            onPress: () => {
-                                sheetRef.current.snapTo(0);
-                            },
+                            onPress: () => simpleEventFormRef.current.snapTo(0),
                         },
                     ]}
                     animated
