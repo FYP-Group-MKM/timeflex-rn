@@ -1,15 +1,16 @@
-import { id } from 'date-fns/locale';
-import * as SQLite from 'expo-sqlite';
+import * as sqlite from 'expo-sqlite';
+
+export const db = sqlite.openDatabase('appointments');
 
 //This JavaScript is usefor stroing the function of database manipulation
 //db is the database object created by SQLite from expo-sqlite libray.
 export const createTable = (db) => {
     db.transaction(tx => {
         tx.executeSql(
-            'create table if not exists appointment (id integer primary key not null, title text, startdate text, enddate text, description text);', [], () => console.log(`Create Database sucess`), () => console.log(`Create Database Fail`)
+            'create table if not exists appointment (id text primary key not null, title text, startdate text, enddate text, description text);'
+            , [], () => console.log(`Create Database sucess`), () => console.log(`Create Database Fail`)
         )
     })
-
 }
 //Add item to the table, db is the database object created by SQLite db.openDatabase, appointment is a object.
 export const addAppointment = (db, appointment) => {
@@ -30,12 +31,11 @@ export const deleteAppointment = (db, id) => {
     })
 }
 
-export const fetchAppointment = (db) => {
+export const fetchAppointments = (db) => {
     db.transaction(tx => {
         tx.executeSql('select * from appointment', [], (_, { rows }) =>
             console.log('Read all Sucess', JSON.stringify(rows)), () => console.log('error')
         );
-
     })
 }
 

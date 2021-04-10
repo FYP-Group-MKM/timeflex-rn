@@ -9,6 +9,8 @@ import { setCurrentDate } from '../actions';
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
 
+import { db, fetchAppointments } from '../db';
+
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
     const smartPlanningFormRef = React.useRef(null);

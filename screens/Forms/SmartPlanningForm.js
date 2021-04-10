@@ -88,7 +88,8 @@ const SmartPlanningForm = (props) => {
         if (deadline < new Date()) {
             newValidity.invalidDeadline = true;
             isValid = false;
-            alert("The deadline must be in the future");
+            setInvalidDateMsg("The deadline cannot be in the past");
+            setSnackbarVisible(true);
         }
 
         if (!exDuration) {
