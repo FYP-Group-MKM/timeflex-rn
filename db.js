@@ -1,4 +1,5 @@
 
+import { id } from 'date-fns/locale';
 import * as SQLite from 'expo-sqlite';
 
 //This JavaScript is usefor stroing the function of database manipulation
@@ -34,3 +35,19 @@ export const deleteAppointment = (db,id) => {
     } )
 }
 
+export const fetchAppointment = (db) =>{
+    db.transaction(tx => {
+        tx.executeSql('select * from appointment', [], (_, { rows }) =>
+          console.log(JSON.stringify(rows))
+        );
+    
+    } )
+}
+export const readOneAppointment = (db) => {
+    db.transaction(tx => {
+        tx.executeSql('select * from appointment where id = ?', [id], (_, { rows }) =>
+          console.log(JSON.stringify(rows))
+        );
+    
+    } )
+}
