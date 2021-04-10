@@ -33,7 +33,6 @@ const SimpleEventForm = (props) => {
     );
 
     const handleSubmit = async () => {
-        console.log(appointment)
         if (!appointmentIsValid()) return;
 
         await fetch('https://jsonplaceholder.typicode.com/posts', {

@@ -27,6 +27,7 @@ const SmartPlanningForm = (props) => {
     const handleDescriptionInput = (text) => setAppointment({ ...appointment, description: text });
     const handleDivisibleSwitchToggle = () => setAppointment({ ...appointment, divisible: !appointment.divisible });
     const handleDeadlineInput = (date) => setAppointment({ ...appointment, deadline: date });
+    const handleExDurationInput = (val) => setAppointment({ ...appointment, exDuration: Number(val) });
     const handleMinSessionInput = (val) => setAppointment({ ...appointment, minSession: Number(val) });
     const handleMaxSessionInput = (val) => setAppointment({ ...appointment, maxSession: Number(val) });
 
@@ -39,8 +40,15 @@ const SmartPlanningForm = (props) => {
     );
 
     const handleSubmit = async () => {
-        console.log(appointment)
         if (!appointmentIsValid()) return;
+
+        if (!appointment.divisible) {
+            setAppointment({
+                ...appointment,
+                maxSession: appointment.exDuration,
+                minSession: appointment.exDuration,
+            });
+        }
 
         await fetch('https://jsonplaceholder.typicode.com/posts', {
             method: 'POST',
@@ -52,12 +60,18 @@ const SmartPlanningForm = (props) => {
                 ...appointment
             }),
         });
+
+        props.sheetRef.current.snapTo(1);
+        resetAppointment();
     };
 
     const resetAppointment = () => setAppointment({
         title: '',
         deadline: addWeeks(setMinutes(setHours(new Date(), 0), 0), 1),
+        exDuration: null,
         divisible: true,
+        minSession: 1,
+        maxSession: '',
         description: '',
     });
 
@@ -130,16 +144,18 @@ const SmartPlanningForm = (props) => {
                     <TextInput
                         mode='outlined'
                         label="Expected Duration"
-                        error={validity.exDurationIsEmpty}
                         value={appointment.exDuration}
+                        error={validity.exDurationIsEmpty}
                         dense
-                        onChangeText={handleDescriptionInput}
+                        onChangeText={handleExDurationInput}
                     />
-                    <View style={styles.sessionTextInputRow}>
+
+                    {appointment.divisible ? <View style={styles.sessionTextInputRow}>
                         <TextInput
                             mode='outlined'
                             label="Minimum Session"
-                            value={appointment.minSession.toString()}
+                            value={appointment.minSession ? appointment.minSession.toString() : ''}
+                            error={validity.minSessionIsEmpty}
                             dense
                             style={styles.sessionTextInput}
                             onChangeText={handleMinSessionInput}
@@ -147,12 +163,14 @@ const SmartPlanningForm = (props) => {
                         <TextInput
                             mode='outlined'
                             label="Maximum Session"
-                            value={appointment.maxSession.toString()}
+                            value={appointment.maxSession ? appointment.maxSession.toString() : ''}
+                            error={validity.maxSessionIsEmpty}
                             dense
                             style={styles.sessionTextInput}
                             onChangeText={handleMaxSessionInput}
                         />
-                    </View>
+                    </View> : null}
+
                     <TextInput
                         mode='outlined'
                         label="Description"
@@ -190,6 +208,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     eventTitle: {
+        marginTop: 10,
         marginBottom: 20,
     },
     deadline: {
