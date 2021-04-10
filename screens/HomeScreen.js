@@ -11,17 +11,9 @@ import BottomSheet from 'reanimated-bottom-sheet';
 import SimpleEventForm from './Forms/SimpleEventForm';
 
 const HomeScreen = (props) => {
+    const sheetRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
     const dateString = format(props.currentDate, 'MMM yyyy');
-    const sheetRef = React.useRef(null);
-
-    const renderHeader = () => (
-        <View style={styles.header}>
-            <View style={styles.panelHeader}>
-                <View style={styles.panelHandle} />
-            </View>
-        </View>
-    );
 
     return (
         <SafeAreaView style={styles.container}>
@@ -37,13 +29,7 @@ const HomeScreen = (props) => {
                 height={1}
             />
             <Portal>
-                <BottomSheet
-                    ref={sheetRef}
-                    initialSnap={2}
-                    snapPoints={['90%', '50%', 0]}
-                    renderHeader={renderHeader}
-                    renderContent={SimpleEventForm}
-                />
+                <SimpleEventForm sheetRef={sheetRef} />
                 <FAB.Group
                     open={fabOpen}
                     icon={fabOpen ? 'close' : 'plus'}
