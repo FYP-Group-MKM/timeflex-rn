@@ -5,14 +5,14 @@ const initialState = {
         {
             id: 0,
             title: 'Meeting',
-            start: new Date(2021, 3, 9, 10, 0),
-            endDate: new Date(2021, 3, 9, 10, 30),
+            start: new Date(2021, 3, 12, 10, 0),
+            endDate: new Date(2021, 3, 12, 10, 30),
         },
         {
             id: 1,
             title: 'Coffee break',
-            start: new Date(2021, 3, 9, 15, 45),
-            end: new Date(2021, 3, 9, 22, 30),
+            start: new Date(2021, 3, 13, 15, 45),
+            end: new Date(2021, 3, 13, 22, 30),
         },
 
     ],

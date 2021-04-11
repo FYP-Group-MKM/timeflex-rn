@@ -8,14 +8,18 @@ import { setCurrentDate } from '../actions';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
+import EventForm from './Forms/EventForm'
 
 import { db, fetchAppointments } from '../db';
+import { set } from 'date-fns';
 
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
     const smartPlanningFormRef = React.useRef(null);
+    const EventFormRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
     const dateString = format(props.currentDate, 'MMM yyyy');
+    const [eventPressed,setEvent] = useState({})
 
     // const translatedAppointments = props.appointments.map(appointment => {
     //     return {
@@ -38,10 +42,16 @@ const HomeScreen = (props) => {
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}
+                onPressEvent={(event) => {
+                    console.log(event)
+                    setEvent(event)
+                    EventFormRef.current.snapTo(0)
+                }}
             />
             <Portal>
                 <SimpleEventForm sheetRef={simpleEventFormRef} />
                 <SmartPlanningForm sheetRef={smartPlanningFormRef} />
+                <EventForm sheetRef={EventFormRef} appointment={eventPressed}/>
                 <FAB.Group
                     open={fabOpen}
                     icon={fabOpen ? 'close' : 'plus'}
