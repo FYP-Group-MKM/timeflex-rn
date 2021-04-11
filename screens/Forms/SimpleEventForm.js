@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { TextInput, Button, Switch, Snackbar, Headline, Subheading } from 'react-native-paper';
 import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
+import {db,addAppointment} from '../../db'
 
 
 const SimpleEventForm = (props) => {
@@ -45,8 +46,11 @@ const SimpleEventForm = (props) => {
             body: JSON.stringify({
                 ...appointment
             }),
-        });
-
+        })
+        
+        //Create the appointment to the local storage:
+        addAppointment(db,appointment);
+        
         props.sheetRef.current.snapTo(1);
         resetAppointment();
     };
