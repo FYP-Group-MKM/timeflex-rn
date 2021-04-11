@@ -1,21 +1,9 @@
 const initialState = {
-    user: {},
+    user: {
+        googleId: '110304641455079409711'
+    },
     authenticated: false,
-    appointments: [
-        {
-            id: 0,
-            title: 'Meeting',
-            startDate: new Date(2021, 3, 9, 10, 0),
-            endDate: new Date(2021, 3, 9, 10, 30),
-        },
-        {
-            id: 1,
-            title: 'Coffee break',
-            startDate: new Date(2021, 3, 9, 15, 45),
-            endDate: new Date(2021, 3, 9, 22, 30),
-        },
-
-    ],
+    appointments: [],
     loading: false,
     error: ""
 };

@@ -1,5 +1,5 @@
 import format from 'date-fns/format';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView } from 'react-native';
 import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
@@ -9,21 +9,30 @@ import { setCurrentDate } from '../actions';
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
 
-import { db, fetchAppointments } from '../db';
+import { fetchAppointments } from '../actions';
 
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
     const smartPlanningFormRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
     const dateString = format(props.currentDate, 'MMM yyyy');
+    const [appointments, setAppointments] = useState([])
 
-    const translatedAppointments = props.appointments.map(appointment => {
-        return {
-            ...appointment,
-            start: appointment.startDate,
-            end: appointment.endDate,
-        };
-    });
+    useEffect(() => {
+        props.fetchAppointments();
+
+        if (props.appointments.length !== 0) {
+            setAppointments(props.appointments.map(appointment => {
+                return {
+                    ...appointment,
+                    start: appointment.startDate,
+                    end: appointment.endDate,
+                };
+            }));
+        }
+    }, [])
+
+    console.log(appointments)
 
     return (
         <SafeAreaView style={styles.container}>
@@ -33,7 +42,7 @@ const HomeScreen = (props) => {
                 <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
             </PaperAppbar.Header >
             <Calendar
-                events={translatedAppointments}
+                events={appointments}
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}
@@ -123,10 +132,12 @@ const styles = StyleSheet.create({
 const mapStateToProps = (state) => ({
     currentDate: state.calendar.currentDate,
     appointments: state.data.appointments,
+    user: state.data.user,
 });
 
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
+    fetchAppointments: () => dispatch(fetchAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
