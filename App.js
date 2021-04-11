@@ -7,13 +7,24 @@ import HomeScreen from './screens/HomeScreen';
 import {db,createTable, resetTable} from './db'
 import { fetchAppointments } from './actions';
 import * as sqlite from 'expo-sqlite';
-
+const testCase = [
+    {
+        title: 'Meeting',
+        start: new Date(2021, 3, 12, 9, 0),
+        end: new Date(2021, 3, 12, 10, 30),
+      },
+      {
+        title: 'Coffee break',
+        start: new Date(2021, 3, 13, 15, 45),
+        end: new Date(2021, 3, 13, 16, 30),
+      },
+]
 
 const Drawer = createDrawerNavigator();
 
 const App = (props) => {
     const routes = ['week', '3days', 'day'].map(mode => {
-        const renderScreen = ({ navigation }) => <HomeScreen navigation={navigation} mode={mode} appointments={events}/>
+        const renderScreen = ({ navigation }) => <HomeScreen navigation={navigation} mode={mode} appointments={testCase}/>
         let name;
         if (mode === 'day') name = 'Days';
         if (mode === '3days') name = '3 Days';

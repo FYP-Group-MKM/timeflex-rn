@@ -24,18 +24,7 @@ const HomeScreen = (props) => {
     //         end: appointment.endDate,
     //     };
     // });
-    const events = [{
-        id: 0,
-        title: 'Meeting',
-        start: new Date(2021, 3, 11, 14, 0),
-        end: new Date(2021, 3, 11, 16, 30),
-    },
-    {
-        id: 1,
-        title: 'Coffee break',
-        start: new Date(2021, 3, 11, 15, 45),
-        end: new Date(2021, 3, 11, 22, 30),
-    }]
+
 
     return (
         <SafeAreaView style={styles.container}>
@@ -45,7 +34,7 @@ const HomeScreen = (props) => {
                 <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
             </PaperAppbar.Header >
             <Calendar
-                events={events}
+                events={props.appointments}
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}
@@ -76,7 +65,8 @@ const HomeScreen = (props) => {
                     ]}
                     animated
                     onStateChange={() => setFabOpen(!fabOpen)}
-                    onPress={() => setFabOpen(!fabOpen)}
+                    // onPress={() => setFabOpen(!fabOpen)}
+                    onPress={() => console.log(props.appointments)}
                 />
             </Portal>
         </SafeAreaView >
