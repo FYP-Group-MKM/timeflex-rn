@@ -32,11 +32,13 @@ export const deleteAppointment = (db, id) => {
 }
 
 export const fetchAppointments = (db) => {
-    db.transaction(tx => {
+    let data
+    data = db.transaction(tx => {
         tx.executeSql('select * from appointment', [], (_, { rows }) =>
-            console.log('Read all Sucess', JSON.stringify(rows)), () => console.log('error')
+            data = rows, () => console.log('error')
         );
     })
+    return data
 }
 
 export const readOneAppointment = (db, id) => {
