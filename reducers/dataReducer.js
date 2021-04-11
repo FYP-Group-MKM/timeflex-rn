@@ -3,19 +3,22 @@ const initialState = {
     authenticated: false,
     appointments: [
         {
+            id: 0,
             title: 'Meeting',
-            start: new Date(2021, 3, 9, 10, 0),
-            end: new Date(2021, 3, 9, 10, 30),
+            startDate: new Date(2021, 3, 9, 10, 0),
+            endDate: new Date(2021, 3, 9, 10, 30),
         },
         {
+            id: 1,
             title: 'Coffee break',
-            start: new Date(2021, 3, 9, 15, 45),
-            end: new Date(2021, 3, 9, 16, 30),
+            startDate: new Date(2021, 3, 9, 15, 45),
+            endDate: new Date(2021, 3, 9, 22, 30),
         },
+
     ],
     loading: false,
     error: ""
-}
+};
 
 const dataReducer = (state = initialState, action) => {
     switch (action.type) {
