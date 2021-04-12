@@ -16,15 +16,6 @@ const Drawer = createDrawerNavigator();
 const App = (props) => {
     const [authResult, setAuthResult] = useState({});
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            await fetch('http:localhost:5000/auth/login/success', { credentials: 'include' })
-                .then(res => res.json())
-                .then(user => { if (user.googleId) props.setUser(user) })
-        };
-        fetchUser();
-    }, [])
-
     const routes = ['week', '3days', 'day'].map(mode => {
         const renderScreen = ({ navigation }) => <HomeScreen navigation={navigation} mode={mode} />
         let name;
@@ -38,30 +29,25 @@ const App = (props) => {
         WebBrowser.dismissBrowser()
     }
     const handleOAuthLogin = async () => {
-        // gets the app's deep link
         let redirectUrl = await Linking.getInitialURL()
-        // this should change depending on where the server is running
-        addLinkingListener()
+        Linking.addEventListener('url', handleRedirect)
         try {
-            let authResult = await WebBrowser.openAuthSessionAsync(`http://localhost:5000/auth/google`, redirectUrl)
-            console.log(authResult);
-            setAuthResult(authResult);
+            let authResult = await WebBrowser.openAuthSessionAsync(`http://localhost:5000/expo-auth/google`, redirectUrl)
+            // let authResult = await WebBrowser.openAuthSessionAsync(`https://timeflex-web.herokuapp.com/expo-auth/google`, redirectUrl)
+            const userURIComponent = authResult.url.replace('exp://exp.host/@darren1208/timeflex-rn/', '');
+            const userJSON = decodeURIComponent(userURIComponent);
+            const user = JSON.parse(userJSON);
+            props.setUser(user);
         } catch (err) {
             console.log('ERROR:', err)
         }
-        removeLinkingListener()
-    }
-    const addLinkingListener = () => {
-        Linking.addEventListener('url', handleRedirect)
-    }
-    const removeLinkingListener = () => {
         Linking.removeEventListener('url', handleRedirect)
     }
 
     return (
         <NavigationContainer>
             <ExpoStatusBar style='auto' />
-            {authResult?.type === 'success' ? <Drawer.Navigator>
+            {props.user.googleId ? <Drawer.Navigator>
                 {routes}
             </Drawer.Navigator> : <SafeAreaView>
                 <Button title='login' onPress={handleOAuthLogin}>Login</Button>

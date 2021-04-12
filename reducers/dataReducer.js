@@ -1,7 +1,5 @@
 const initialState = {
-    user: {
-        googleId: '110304641455079409711'
-    },
+    user: {},
     authenticated: false,
     appointments: [],
     loading: false,

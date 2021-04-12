@@ -20,19 +20,15 @@ const HomeScreen = (props) => {
 
     useEffect(() => {
         props.fetchAppointments();
-
-        if (props.appointments.length !== 0) {
-            setAppointments(props.appointments.map(appointment => {
-                return {
-                    ...appointment,
-                    start: appointment.startDate,
-                    end: appointment.endDate,
-                };
-            }));
-        }
     }, [])
 
-    console.log(appointments)
+    const translatedAppointments = props.appointments.map(appointment => {
+        return {
+            ...appointment,
+            start: appointment.startDate,
+            end: appointment.endDate,
+        };
+    });
 
     return (
         <SafeAreaView style={styles.container}>
@@ -42,7 +38,7 @@ const HomeScreen = (props) => {
                 <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
             </PaperAppbar.Header >
             <Calendar
-                events={appointments}
+                events={translatedAppointments}
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}

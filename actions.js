@@ -43,7 +43,7 @@ export const fetchAppointments = () => {
     return async (dispatch, getState) => {
         dispatch(fetchAppointmentsRequest());
         const googleId = getState().data.user.googleId;
-        await fetch('http://localhost:5000/appointments/' + googleId, {
+        await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId, {
             credentials: 'include',
         })
             .then(res => res.json())
