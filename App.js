@@ -32,8 +32,8 @@ const App = (props) => {
         let redirectUrl = await Linking.getInitialURL()
         Linking.addEventListener('url', handleRedirect)
         try {
-            let authResult = await WebBrowser.openAuthSessionAsync(`http://localhost:5000/expo-auth/google`, redirectUrl)
-            // let authResult = await WebBrowser.openAuthSessionAsync(`https://timeflex-web.herokuapp.com/expo-auth/google`, redirectUrl)
+            // let authResult = await WebBrowser.openAuthSessionAsync(`http://localhost:5000/expo-auth/google`, redirectUrl)
+            let authResult = await WebBrowser.openAuthSessionAsync(`https://timeflex-web.herokuapp.com/expo-auth/google`, redirectUrl)
             const userURIComponent = authResult.url.replace('exp://exp.host/@darren1208/timeflex-rn/', '');
             const userJSON = decodeURIComponent(userURIComponent);
             const user = JSON.parse(userJSON);
