@@ -3,8 +3,8 @@ import setMinutes from 'date-fns/setMinutes';
 import addWeeks from 'date-fns/addWeeks';
 import React, { useState } from 'react';
 import { StyleSheet, View, Keyboard, TouchableWithoutFeedback } from 'react-native';
-import { TextInput, Button, Switch, Text, Snackbar, Subheading, Headline, Paragraph } from 'react-native-paper';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import { TextInput, Button, Switch, Snackbar, Subheading, Headline, Paragraph } from 'react-native-paper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import BottomSheet from 'reanimated-bottom-sheet';
 
 import ButtonDateTimePicker from './ButtonDateTimePicker';
