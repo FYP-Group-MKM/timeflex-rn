@@ -30,10 +30,15 @@ const HomeScreen = (props) => {
         };
     });
 
+    const handleMenuButtonPress = () => {
+        props.navigation.toggleDrawer();
+        props.fetchAppointments();
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <PaperAppbar.Header style={styles.appbar}>
-                <PaperAppbar.Action icon={'menu'} onPress={props.navigation.toggleDrawer} />
+                <PaperAppbar.Action icon={'menu'} onPress={handleMenuButtonPress} />
                 <PaperAppbar.Content title={dateString} />
                 <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
             </PaperAppbar.Header >
