@@ -74,7 +74,7 @@ export const postAppointmentFailure = error => {
 export const postAppointment = appointment => {
     return async (dispatch) => {
         dispatch(postAppointmentRequest());
-        await fetch('http://localhost:5000/appointments', {
+        await fetch('https://timeflex-web.herokuapp.com/appointments', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -112,7 +112,7 @@ export const deleteAppointment = appointmentId => {
     return async (dispatch, getState) => {
         dispatch(deleteAppointmentRequest());
         const googleId = getState().data.user.googleId;
-        await fetch('http://localhost:5000/appointments/' + googleId + '/' + appointmentId, {
+        await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId + '/' + appointmentId, {
             method: 'DELETE',
             headers: {
                 'Accept': 'application/json',

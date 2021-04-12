@@ -51,16 +51,16 @@ const SmartPlanningForm = (props) => {
             });
         }
 
-        await fetch('https://jsonplaceholder.typicode.com/posts', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                ...appointment
-            }),
-        });
+        // await fetch('https://jsonplaceholder.typicode.com/posts', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Accept': 'application/json',
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify({
+        //         ...appointment
+        //     }),
+        // });
 
         props.sheetRef.current.snapTo(1);
         resetAppointment();
