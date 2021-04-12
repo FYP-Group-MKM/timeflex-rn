@@ -6,6 +6,7 @@ import { TextInput, Button, Switch, Snackbar, Headline, Subheading } from 'react
 import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 import {db,addAppointment} from '../../db'
+import { connect } from 'react-redux';
 
 
 const EventForm = (props) => {
@@ -217,4 +218,15 @@ const styles = StyleSheet.create({
 });
 
 
-export default EventForm;
+const mapStateToProps = (state) => ({
+    currentDate: state.calendar.currentDate,
+    appointments: state.data.appointments,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+    setCurrentDate: (date) => dispatch(setCurrentDate(date)),
+    
+    
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(EventForm);

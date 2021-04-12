@@ -7,24 +7,12 @@ import HomeScreen from './screens/HomeScreen';
 import {db,createTable, resetTable} from './db'
 import { fetchAppointments } from './actions';
 import * as sqlite from 'expo-sqlite';
-const testCase = [
-    {
-        title: 'Meeting',
-        start: new Date(2021, 3, 12, 9, 0),
-        end: new Date(2021, 3, 12, 10, 30),
-      },
-      {
-        title: 'Coffee break',
-        start: new Date(2021, 3, 13, 15, 45),
-        end: new Date(2021, 3, 13, 16, 30),
-      },
-]
-
+import {setCurrentDate} from './actions'
 const Drawer = createDrawerNavigator();
 
 const App = (props) => {
     const routes = ['week', '3days', 'day'].map(mode => {
-        const renderScreen = ({ navigation }) => <HomeScreen navigation={navigation} mode={mode} appointments={testCase}/>
+        const renderScreen = ({ navigation }) => <HomeScreen navigation={navigation} mode={mode} />
         let name;
         if (mode === 'day') name = 'Days';
         if (mode === '3days') name = '3 Days';
@@ -50,8 +38,11 @@ const App = (props) => {
             resetTable(db);
             createTable(db);
             //This will get the appoibntment from the Local Database 
+            //It will return a array with an object
             fectchData(db);
-            console.log('The appointment are ', appointment)
+            //Then upload the appointment to the redux state
+            // props.setAppointment(appointment)
+            
         }
         initialization();
     },[])
@@ -68,6 +59,12 @@ const App = (props) => {
 
 const mapStateToProps = (state) => ({
     currentDate: state.calendar.currentDate,
+    appointments: state.data.appointments,
 });
 
-export default connect(mapStateToProps)(App);
+const mapDispatchToProps = (dispatch) => ({
+    setCurrentDate: (date) => dispatch(setCurrentDate(date)),
+    // setAppointment: (appointment) => dispatch()
+});
+
+export default connect(mapStateToProps,mapDispatchToProps)(App);

@@ -11,7 +11,6 @@ import SmartPlanningForm from './Forms/SmartPlanningForm';
 import EventForm from './Forms/EventForm'
 
 import { db, fetchAppointments } from '../db';
-import { set } from 'date-fns';
 
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
@@ -21,13 +20,13 @@ const HomeScreen = (props) => {
     const dateString = format(props.currentDate, 'MMM yyyy');
     const [eventPressed,setEvent] = useState({})
 
-    // const translatedAppointments = props.appointments.map(appointment => {
-    //     return {
-    //         ...appointment,
-    //         start: appointment.startDate,
-    //         end: appointment.endDate,
-    //     };
-    // });
+    const translatedAppointments = props.appointments.map(appointment => {
+        return {
+            ...appointment,
+            start: appointment.startDate,
+            end: appointment.endDate,
+        };
+    });
 
 
     return (
