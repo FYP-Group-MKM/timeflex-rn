@@ -49,11 +49,13 @@ const App = (props) => {
     return (
         <NavigationContainer>
             <ExpoStatusBar style='auto' />
-            {props.user.googleId ? <Drawer.Navigator>
-                {routes}
-            </Drawer.Navigator> : <SafeAreaView>
-                <Button title='login' onPress={handleOAuthLogin}>Login</Button>
-            </SafeAreaView >}
+            {props.user.googleId ?
+                <Drawer.Navigator>
+                    {routes}
+                </Drawer.Navigator>
+                : <SafeAreaView>
+                    <Button title='login' onPress={handleOAuthLogin}>Login</Button>
+                </SafeAreaView >}
         </NavigationContainer>
     );
 };

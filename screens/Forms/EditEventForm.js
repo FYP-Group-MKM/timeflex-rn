@@ -5,7 +5,6 @@ import { StyleSheet, View } from 'react-native';
 import { TextInput, Button, Switch, Snackbar, Headline, Subheading } from 'react-native-paper';
 import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
-import {db,addAppointment} from '../../db'
 import { connect } from 'react-redux';
 
 
@@ -49,15 +48,15 @@ const EventForm = (props) => {
         //         ...appointment
         //     }),
         // })
-        
+
         //Create the appointment to the local storage:
         // addAppointment(db,appointment);
-        
+
         props.sheetRef.current.snapTo(1);
         // resetAppointment();
     };
-    const handleDelete = () =>{
-        
+    const handleDelete = () => {
+
     }
 
     const resetAppointment = () => setAppointment({
@@ -116,7 +115,7 @@ const EventForm = (props) => {
                     <View style={styles.formTitle}>
                         <Headline>Edit Event</Headline>
                         <Button onPress={handleSubmit}>Edit</Button>
-                        <Button onPress={() => console.log('Here is the appointment',props.appointment)}>Delete</Button>
+                        <Button onPress={() => console.log('Here is the appointment', props.appointment)}>Delete</Button>
                     </View>
                     <TextInput
                         mode='outlined'
@@ -225,8 +224,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
-    
-    
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EventForm);

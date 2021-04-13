@@ -8,37 +8,40 @@ import { setCurrentDate } from '../actions';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
-import EventForm from './Forms/EventForm'
+import EditEventForm from './Forms/EditEventForm'
 
 import { fetchAppointments } from '../actions';
 
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
     const smartPlanningFormRef = React.useRef(null);
-    const EventFormRef = React.useRef(null);
+    const eventFormRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
+    const [eventPressed, setEvent] = useState({});
+    const [appointments, setAppointments] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const dateString = format(props.currentDate, 'MMM yyyy');
-    const [eventPressed, setEvent] = useState({})
-    const [appointments, setAppointments] = useState([])
 
     useEffect(() => {
+        console.log(props.user);
         // props.fetchAppointments();
+        setAppointments(
+            props.appointments.map(appointment => ({
+                ...appointment,
+                start: appointment.startDate,
+                end: appointment.endDate,
+            }))
+        );
+        setLoading(false);
     }, []);
-
-    const translatedAppointments = props.appointments.map(appointment => {
-        return {
-            ...appointment,
-            start: appointment.startDate,
-            end: appointment.endDate,
-        };
-    });
 
     const handleMenuButtonPress = () => {
         props.navigation.toggleDrawer();
         props.fetchAppointments();
     };
 
-    return (
+    return !loading ? (
         <SafeAreaView style={styles.container}>
             <PaperAppbar.Header style={styles.appbar}>
                 <PaperAppbar.Action icon={'menu'} onPress={handleMenuButtonPress} />
@@ -46,20 +49,20 @@ const HomeScreen = (props) => {
                 <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
             </PaperAppbar.Header >
             <Calendar
-                events={translatedAppointments}
+                events={appointments}
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}
                 onPressEvent={(event) => {
                     console.log(event)
                     setEvent(event)
-                    EventFormRef.current.snapTo(0)
+                    eventFormRef.current.snapTo(0)
                 }}
             />
             <Portal>
                 <SimpleEventForm sheetRef={simpleEventFormRef} />
                 <SmartPlanningForm sheetRef={smartPlanningFormRef} />
-                <EventForm sheetRef={EventFormRef} appointment={eventPressed} />
+                <EditEventForm sheetRef={eventFormRef} appointment={eventPressed} />
                 <FAB.Group
                     open={fabOpen}
                     icon={fabOpen ? 'close' : 'plus'}
@@ -83,12 +86,11 @@ const HomeScreen = (props) => {
                     ]}
                     animated
                     onStateChange={() => setFabOpen(!fabOpen)}
-                    // onPress={() => setFabOpen(!fabOpen)}
-                    onPress={() => console.log(props.appointments)}
+                    onPress={() => setFabOpen(!fabOpen)}
                 />
             </Portal>
         </SafeAreaView >
-    );
+    ) : null;
 };
 
 

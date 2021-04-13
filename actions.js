@@ -1,4 +1,4 @@
-import { NetInfo } from "react-native";
+import NetInfo from '@react-native-community/netinfo';
 
 export const setCurrentDate = (date) => {
     return {
@@ -44,22 +44,27 @@ export const fetchAppointmentsFailure = error => {
 export const fetchAppointments = () => {
     return async (dispatch, getState) => {
         dispatch(fetchAppointmentsRequest());
-        await NetInfo.fetch().then(async (state) => {
-            if (state.isInternetReachable) {
-                const googleId = getState().data.user.googleId;
-                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId, {
-                    credentials: 'include',
-                })
-                    .then(res => res.json())
-                    .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
-                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-            } else {
-                // fetching data from local db and temporary appointments
-                // ...
-                // pass the fetched data to redux store
-                dispatch(fetchAppointmentsSuccess(appointments));
-            }
-        });
+        // await NetInfo.fetch().then(async (state) => {
+        //     if (state.isInternetReachable) {
+        //         const googleId = getState().data.user.googleId;
+        //         await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+        //             .then(res => res.json())
+        //             // .then(data => { console.log(data); return data })
+        //             .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
+        //             .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+        //     } else {
+        //         // fetching data from local db and temporary appointments
+        //         // ...
+        //         // pass the fetched data to redux store
+        //         // dispatch(fetchAppointmentsSuccess(appointments));
+        //     }
+        // });
+        const googleId = getState().data.user.googleId;
+        await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+            .then(res => res.json())
+            // .then(data => { console.log(data); return data })
+            .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
+            .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
     };
 };
 
