@@ -4,13 +4,12 @@ import { StyleSheet, SafeAreaView } from 'react-native';
 import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
 import { connect } from 'react-redux';
-import { setCurrentDate } from '../actions';
+import { setCurrentDate, fetchAppointments } from '../actions';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
 import EditEventForm from './Forms/EditEventForm'
 
-import { fetchAppointments } from '../actions';
 import NetInfo from '@react-native-community/netinfo';
 
 const HomeScreen = (props) => {
@@ -25,8 +24,7 @@ const HomeScreen = (props) => {
     const dateString = format(props.currentDate, 'MMM yyyy');
 
     useEffect(() => {
-        console.log(new Date());
-        // props.fetchAppointments();
+        console.log(props.appointments);
         setAppointments(
             props.appointments.map(appointment => ({
                 ...appointment,
@@ -50,7 +48,7 @@ const HomeScreen = (props) => {
                 <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
             </PaperAppbar.Header >
             <Calendar
-                events={[]}
+                events={appointments}
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}
