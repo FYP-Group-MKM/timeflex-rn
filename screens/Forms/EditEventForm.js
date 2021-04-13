@@ -6,6 +6,7 @@ import { TextInput, Button, Switch, Snackbar, Headline, Subheading } from 'react
 import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 import { connect } from 'react-redux';
+import { updateAppointment } from '../../actions';
 
 
 const EditEventForm = (props) => {
@@ -36,7 +37,9 @@ const EditEventForm = (props) => {
     );
 
     const handleSubmit = () => {
-        // if (!appointmentIsValid()) return;
+        if (!appointmentIsValid()) return;
+
+
 
         props.sheetRef.current.snapTo(1);
         resetAppointment();

@@ -44,25 +44,20 @@ export const fetchAppointmentsFailure = error => {
 export const fetchAppointments = () => {
     return async (dispatch, getState) => {
         dispatch(fetchAppointmentsRequest());
-        // await NetInfo.fetch().then(async (state) => {
-        //     if (state.isInternetReachable) {
-        //         const googleId = getState().data.user.googleId;
-        //         await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
-        //             .then(res => res.json())
-        //             .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
-        //             .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-        //     } else {
-        //         // fetching data from local db and temporary appointments
-        //         // ...
-        //         // pass the fetched data to redux store
-        //         // dispatch(fetchAppointmentsSuccess(appointments));
-        //     }
-        // });
-        const googleId = getState().data.user.googleId;
-        await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
-            .then(res => res.json())
-            .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
-            .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+        await NetInfo.fetch().then(async (state) => {
+            if (state.isInternetReachable) {
+                const googleId = getState().data.user.googleId;
+                await fetch('http://localhost:5000/appointments/' + googleId)
+                    .then(res => res.json())
+                    .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
+                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+            } else {
+                // fetching data from local db and temporary appointments
+                // ...
+                // pass the fetched data to redux store
+                // ...
+            }
+        });
     };
 };
 
@@ -85,12 +80,14 @@ export const postAppointmentFailure = error => {
     };
 };
 
-export const postAppointment = appointment => {
-    return async (dispatch) => {
+export const postAppointment = (appointment) => {
+    return async (dispatch, getState) => {
+        console.log('postAppointment')
         dispatch(postAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
-                await fetch('https://timeflex-web.herokuapp.com/appointments', {
+                const googleId = getState().data.user.googleId;
+                await fetch('http://localhost:5000/appointments', {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -114,7 +111,7 @@ export const updateAppointment = updatedAppointment => {
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
                 const googleId = getState().data.user.googleId;
-                await fetch(`https://timeflex-web.herokuapp.com/appointments/${googleId}/${updatedAppointment.appointmentId}`, {
+                await fetch(`http://localhost:5000/appointments/${googleId}/${updatedAppointment.appointmentId}`, {
                     method: 'PUT',
                     headers: {
                         'Accept': 'application/json',
@@ -158,7 +155,7 @@ export const deleteAppointment = appointmentId => {
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
                 const googleId = getState().data.user.googleId;
-                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId + '/' + appointmentId, {
+                await fetch('http://localhost:5000/appointments/' + googleId + '/' + appointmentId, {
                     method: 'DELETE',
                     headers: {
                         'Accept': 'application/json',
@@ -178,7 +175,7 @@ export const deleteAppointment = appointmentId => {
 export const setUser = (user) => {
     return {
         type: 'SET_USER',
-        payload: user
+        payload: { ...user }
     };
 };
 // The below is the action for adding the appointment to the redux appopintment

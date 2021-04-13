@@ -4,7 +4,7 @@ import { StyleSheet, SafeAreaView } from 'react-native';
 import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
 import { connect } from 'react-redux';
-import { setCurrentDate, fetchAppointments } from '../actions';
+import { setCurrentDate, fetchAppointments, setUser } from '../actions';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
@@ -24,7 +24,6 @@ const HomeScreen = (props) => {
     const dateString = format(props.currentDate, 'MMM yyyy');
 
     useEffect(() => {
-        console.log(props.appointments);
         setAppointments(
             props.appointments.map(appointment => ({
                 ...appointment,
@@ -45,7 +44,8 @@ const HomeScreen = (props) => {
             <PaperAppbar.Header style={styles.appbar}>
                 <PaperAppbar.Action icon={'menu'} onPress={handleMenuButtonPress} />
                 <PaperAppbar.Content title={dateString} />
-                <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
+                <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setUser({})} />
+                {/* <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} /> */}
             </PaperAppbar.Header >
             <Calendar
                 events={appointments}
@@ -150,6 +150,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
     fetchAppointments: () => dispatch(fetchAppointments()),
+    setUser: (user) => dispatch(setUser(user)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

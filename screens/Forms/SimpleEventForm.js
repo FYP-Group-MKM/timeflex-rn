@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { StyleSheet, View, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { TextInput, Button, Switch, Snackbar, Headline, Subheading } from 'react-native-paper';
 import BottomSheet from 'reanimated-bottom-sheet';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { connect } from 'react-redux';
+import { postAppointment, fetchAppointments } from '../../actions';
 
 const SimpleEventForm = (props) => {
     const [appointment, setAppointment] = useState({
@@ -34,8 +36,14 @@ const SimpleEventForm = (props) => {
         </View>
     );
 
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
         if (!appointmentIsValid()) return;
+
+        props.postAppointment({
+            type: 'simple',
+            appointment: { ...appointment, googleId: user.googleId }
+        })
+            .then(props.fetchAppointments());
 
         props.sheetRef.current.snapTo(1);
         resetAppointment();
@@ -206,5 +214,13 @@ const styles = StyleSheet.create({
 
 });
 
+const mapStateToProps = state => ({
+    user: state.data.user,
+});
 
-export default SimpleEventForm;
+const mapDispatchToProps = dispatch => ({
+    postAppointment: (appointment) => dispatch(postAppointment(appointment)),
+    fetchAppointments: () => dispatch(fetchAppointments())
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(SimpleEventForm);

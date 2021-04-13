@@ -85,18 +85,18 @@ const dataReducer = (state = initialState, action) => {
         case 'FECTCH_LOCAL':
             return {
                 ...state,
-                appointments:{...action.payload}
+                appointments: { ...action.payload }
             }
         //This will return add the payload i.e appointment to the appointment
         case 'CREATE_LOCAL':
-            return{
+            return {
                 ...state,
-                appointments:[...state.appointments,action.payload],
+                appointments: [...state.appointments, action.payload],
             }
         case 'DELETE_LOCAL':
-            return{
+            return {
                 ...state,
-                appointments:state.appointments.filter((appointments) => appointments.id !== action.payload)
+                appointments: state.appointments.filter((appointments) => appointments.id !== action.payload)
             }
         default:
             return state;
