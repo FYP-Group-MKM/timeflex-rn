@@ -49,7 +49,6 @@ export const fetchAppointments = () => {
         //         const googleId = getState().data.user.googleId;
         //         await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
         //             .then(res => res.json())
-        //             // .then(data => { console.log(data); return data })
         //             .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
         //             .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
         //     } else {
@@ -62,7 +61,6 @@ export const fetchAppointments = () => {
         const googleId = getState().data.user.googleId;
         await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
             .then(res => res.json())
-            // .then(data => { console.log(data); return data })
             .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
             .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
     };

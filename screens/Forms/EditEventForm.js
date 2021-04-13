@@ -8,7 +8,7 @@ import ButtonDateTimePicker from './ButtonDateTimePicker';
 import { connect } from 'react-redux';
 
 
-const EventForm = (props) => {
+const EditEventForm = (props) => {
     const [appointment, setAppointment] = useState({
         title: props.appointment.title,
         startDate: setMinutes(addHours(new Date(), 1), 0),
@@ -38,23 +38,10 @@ const EventForm = (props) => {
     const handleSubmit = () => {
         // if (!appointmentIsValid()) return;
 
-        // await fetch('https://jsonplaceholder.typicode.com/posts', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Accept': 'application/json',
-        //         'Content-Type': 'application/json',
-        //     },
-        //     body: JSON.stringify({
-        //         ...appointment
-        //     }),
-        // })
-
-        //Create the appointment to the local storage:
-        // addAppointment(db,appointment);
-
         props.sheetRef.current.snapTo(1);
-        // resetAppointment();
+        resetAppointment();
     };
+
     const handleDelete = () => {
 
     }
@@ -226,4 +213,4 @@ const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(EventForm);
+export default connect(mapStateToProps, mapDispatchToProps)(EditEventForm);

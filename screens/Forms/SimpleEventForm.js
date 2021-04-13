@@ -7,7 +7,6 @@ import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import {db,addAppointment} from '../../db';
 
 const SimpleEventForm = (props) => {
     const [appointment, setAppointment] = useState({
@@ -38,9 +37,6 @@ const SimpleEventForm = (props) => {
     const handleSubmit = async () => {
         if (!appointmentIsValid()) return;
 
-        //Create the appointment to the local storage:
-        addAppointment(db,appointment);
-        
         props.sheetRef.current.snapTo(1);
         resetAppointment();
     };

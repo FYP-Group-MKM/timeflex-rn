@@ -69,7 +69,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
     setUser: (user) => dispatch(setUser(user)),
-    // setAppointment: (appointment) => dispatch()
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

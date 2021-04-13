@@ -11,6 +11,7 @@ import SmartPlanningForm from './Forms/SmartPlanningForm';
 import EditEventForm from './Forms/EditEventForm'
 
 import { fetchAppointments } from '../actions';
+import NetInfo from '@react-native-community/netinfo';
 
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
@@ -19,12 +20,12 @@ const HomeScreen = (props) => {
     const [fabOpen, setFabOpen] = useState(false);
     const [eventPressed, setEvent] = useState({});
     const [appointments, setAppointments] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     const dateString = format(props.currentDate, 'MMM yyyy');
 
     useEffect(() => {
-        console.log(props.user);
+        console.log(new Date());
         // props.fetchAppointments();
         setAppointments(
             props.appointments.map(appointment => ({
@@ -41,7 +42,7 @@ const HomeScreen = (props) => {
         props.fetchAppointments();
     };
 
-    return !loading ? (
+    return (
         <SafeAreaView style={styles.container}>
             <PaperAppbar.Header style={styles.appbar}>
                 <PaperAppbar.Action icon={'menu'} onPress={handleMenuButtonPress} />
@@ -49,7 +50,7 @@ const HomeScreen = (props) => {
                 <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
             </PaperAppbar.Header >
             <Calendar
-                events={appointments}
+                events={[]}
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}
@@ -90,7 +91,7 @@ const HomeScreen = (props) => {
                 />
             </Portal>
         </SafeAreaView >
-    ) : null;
+    );
 };
 
 
