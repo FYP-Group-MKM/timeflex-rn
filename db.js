@@ -7,21 +7,21 @@ export const db = sqlite.openDatabase('appointments');
 export const createTable = (db) => {
     db.transaction(tx => {
         tx.executeSql(
-            'create table if not exists appointment (id text primary key not null, title text, startdate text, enddate text, description text);'
+            'create table if not exists appointment (id INT primary key not null unique, title text, start text, end text, description text);'
             , [], () => console.log(`Create Database sucess`), () => console.log(`Create Database Fail`)
         )
     })
 }
 //Add item to the table, db is the database object created by SQLite db.openDatabase, appointment is a object.
-export const addAppointment = (db, appointment) => {
+export const addAppointment = (db, appointment,id) => {
     db.transaction(tx => {
-        tx.executeSql('insert into appointment (title, startdate ,enddate, description) values (?,?,?,?);', [appointment.title, appointment.startdate, appointment.enddate, appointment.description], () => console.log('ADD Appointment sucess'), (error) => console.log(error))
+        tx.executeSql('insert into appointment ( id,title, start ,end, description) values (?,?,?,?,?);', [id,appointment.title, appointment.startdate, appointment.enddate, appointment.description], () => console.log('ADD Appointment sucess'), (error) => console.log('Error'))
     })
 }
 
 export const updateAppointment = (db, id, appointment) => {
     db.transaction(tx => {
-        tx.executeSql('update appointment SET title = ?, startdate = ?,enddate = ?,description = ? where id = ?', [appointment.title, appointment.startdate, appointment.enddate, appointment.description, id], () => console.log('Update Sucess'), () => console.log('Update Fail'))
+        tx.executeSql('update appointment SET title = ?, start = ?,end = ?,description = ? where id = ?;', [appointment.title, appointment.startdate, appointment.enddate, appointment.description, id], () => console.log('Update Sucess'), () => console.log('Update Fail'))
     })
 }
 
@@ -32,11 +32,13 @@ export const deleteAppointment = (db, id) => {
 }
 
 export const fetchAppointments = (db) => {
-    db.transaction(tx => {
+    let data
+    data = db.transaction(tx => {
         tx.executeSql('select * from appointment', [], (_, { rows }) =>
-            console.log('Read all Sucess', JSON.stringify(rows)), () => console.log('error')
+            data = rows, () => console.log('error')
         );
     })
+    return data
 }
 
 export const readOneAppointment = (db, id) => {
@@ -45,4 +47,12 @@ export const readOneAppointment = (db, id) => {
             console.log('read one data sucess', JSON.stringify(rows))
         );
     })
+}
+
+export const resetTable = (db) => {
+    db.transaction(tx => {
+        tx.executeSql('DROP TABLE appointment',[], () => console.log('drop sucess'), () => console.log('Fail')
+        );
+    })
+
 }

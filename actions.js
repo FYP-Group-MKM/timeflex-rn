@@ -131,3 +131,26 @@ export const setUser = (user) => {
         payload: user
     };
 };
+// The below is the action for adding the appointment to the redux appopintment
+//data should interms of array with all appointment subject
+export const fectchLocalData = (data) => {
+    return {
+        type:'FECTCH_LOCAL',
+        payload:data,
+    }
+}
+//This will pass the local apppointment to the redux
+export const createLocalData =  (appointment) => {
+    return {
+        type:'CREATE_LOCAL',
+        payload:appointment,
+    }
+}
+
+//This will require the appointment id  to delete the appoint in the redux
+export const deleteLocalData = (id) => {
+    return {
+        type:'DELETE_LOCAL',
+        payload:id,
+    }
+}
