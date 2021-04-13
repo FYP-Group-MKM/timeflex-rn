@@ -19,7 +19,7 @@ const HomeScreen = (props) => {
     const [fabOpen, setFabOpen] = useState(false);
     const [eventPressed, setEvent] = useState({});
     const [appointments, setAppointments] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const dateString = format(props.currentDate, 'MMM yyyy');
 
@@ -40,7 +40,7 @@ const HomeScreen = (props) => {
         props.fetchAppointments();
     };
 
-    return (
+    return !loading ? (
         <SafeAreaView style={styles.container}>
             <PaperAppbar.Header style={styles.appbar}>
                 <PaperAppbar.Action icon={'menu'} onPress={handleMenuButtonPress} />
@@ -89,7 +89,7 @@ const HomeScreen = (props) => {
                 />
             </Portal>
         </SafeAreaView >
-    );
+    ) : null;
 };
 
 
