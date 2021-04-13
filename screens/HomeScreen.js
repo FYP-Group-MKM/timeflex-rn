@@ -1,5 +1,5 @@
 import format from 'date-fns/format';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView } from 'react-native';
 import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
@@ -10,7 +10,7 @@ import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
 import EventForm from './Forms/EventForm'
 
-import { db, fetchAppointments } from '../db';
+import { fetchAppointments } from '../actions';
 
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
@@ -19,6 +19,11 @@ const HomeScreen = (props) => {
     const [fabOpen, setFabOpen] = useState(false);
     const dateString = format(props.currentDate, 'MMM yyyy');
     const [eventPressed,setEvent] = useState({})
+    const [appointments, setAppointments] = useState([])
+
+    useEffect(() => {
+        props.fetchAppointments();
+    }, []);
 
     const translatedAppointments = props.appointments.map(appointment => {
         return {
@@ -28,11 +33,15 @@ const HomeScreen = (props) => {
         };
     });
 
+    const handleMenuButtonPress = () => {
+        props.navigation.toggleDrawer();
+        props.fetchAppointments();
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <PaperAppbar.Header style={styles.appbar}>
-                <PaperAppbar.Action icon={'menu'} onPress={props.navigation.toggleDrawer} />
+                <PaperAppbar.Action icon={'menu'} onPress={handleMenuButtonPress} />
                 <PaperAppbar.Content title={dateString} />
                 <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
             </PaperAppbar.Header >
@@ -134,10 +143,12 @@ const styles = StyleSheet.create({
 const mapStateToProps = (state) => ({
     currentDate: state.calendar.currentDate,
     appointments: state.data.appointments,
+    user: state.data.user,
 });
 
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
+    fetchAppointments: () => dispatch(fetchAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

@@ -14,7 +14,6 @@ const Main = () => {
     return (
         <StoreProvider store={store} >
             <PaperProvider>
-                {/* <Text>Fuck u</Text> */}
                 <App />
             </PaperProvider>
         </StoreProvider>
