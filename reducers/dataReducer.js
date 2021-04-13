@@ -43,6 +43,23 @@ const dataReducer = (state = initialState, action) => {
                 loading: false,
                 error: action.payload
             };
+        case 'UPDATE_APPOINTMENT_REQUEST':
+            return {
+                ...state,
+                loading: true
+            };
+        case 'UPDATE_APPOINTMENT_SUCCESS':
+            return {
+                ...state,
+                loading: false,
+                error: "",
+            };
+        case 'UPDATE_APPOINTMENT_FAILURE':
+            return {
+                ...state,
+                loading: false,
+                error: action.payload
+            };
         case 'DELETE_APPOINTMENT_REQUEST':
             return {
                 ...state,

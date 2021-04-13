@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button, View } from 'react-native-paper';
 import { SafeAreaView } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
@@ -10,44 +10,17 @@ import { setUser } from './actions';
 import * as Linking from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser';
 import HomeScreen from './screens/HomeScreen';
-import {db,createTable, resetTable} from './db'
-import { fetchAppointments } from './actions';
-import * as sqlite from 'expo-sqlite';
-import {setCurrentDate} from './actions'
+import { setCurrentDate } from './actions'
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Drawer = createDrawerNavigator();
 
 const App = (props) => {
-    const [authResult, setAuthResult] = useState({});
-    //When appointment is finish then no need the appointment any more and can directly retrive from redux
-    const [appointment,setAppointment] = useState(null)
-    const fectchData = (db) => {
-        db.transaction(tx => {
-          tx.executeSql('select * from appointment', null, (_, {rows: { _array }}) =>
-              setAppointment(_array), () => console.log('error')
-          );
-      })
-     }
-    
-    //when open the app see the component have SQL or not
-    useEffect(() => {
-        const initialization = () => {
-            //Reset Table will be delete after Testing
-            resetTable(db);
-            createTable(db);
-            //This will get the appoibntment from the Local Database 
-            //It will return a array with an object
-            fectchData(db);
-            //Then upload the appointment to the redux state
-            // props.setAppointment(appointment)
-            
-        }
-        initialization();
-    },[]);
-
     const handleRedirect = async event => {
         WebBrowser.dismissBrowser();
-    }
+    };
+
     const handleOAuthLogin = async () => {
         let redirectUrl = await Linking.getInitialURL();
         Linking.addEventListener('url', handleRedirect);
@@ -63,7 +36,7 @@ const App = (props) => {
         }
         Linking.removeEventListener('url', handleRedirect);
     };
-  
+
     const routes = ['week', '3days', 'day'].map(mode => {
         const renderScreen = ({ navigation }) => <HomeScreen navigation={navigation} mode={mode} />
         let name;
@@ -88,7 +61,7 @@ const App = (props) => {
 const mapStateToProps = (state) => ({
     currentDate: state.calendar.currentDate,
     user: state.data.user,
-      appointments: state.data.appointments,
+    appointments: state.data.appointments,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -97,4 +70,4 @@ const mapDispatchToProps = (dispatch) => ({
     // setAppointment: (appointment) => dispatch()
 });
 
-export default connect(mapStateToProps,mapDispatchToProps)(App);
+export default connect(mapStateToProps, mapDispatchToProps)(App);

@@ -1,3 +1,5 @@
+import { NetInfo } from "react-native";
+
 export const setCurrentDate = (date) => {
     return {
         type: 'SET_CURRENT_DATE',
@@ -42,13 +44,22 @@ export const fetchAppointmentsFailure = error => {
 export const fetchAppointments = () => {
     return async (dispatch, getState) => {
         dispatch(fetchAppointmentsRequest());
-        const googleId = getState().data.user.googleId;
-        await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId, {
-            credentials: 'include',
-        })
-            .then(res => res.json())
-            .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
-            .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+        await NetInfo.fetch().then(async (state) => {
+            if (state.isInternetReachable) {
+                const googleId = getState().data.user.googleId;
+                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId, {
+                    credentials: 'include',
+                })
+                    .then(res => res.json())
+                    .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
+                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+            } else {
+                // fetching data from local db and temporary appointments
+                // ...
+                // pass the fetched data to redux store
+                dispatch(fetchAppointmentsSuccess(appointments));
+            }
+        });
     };
 };
 
@@ -74,17 +85,47 @@ export const postAppointmentFailure = error => {
 export const postAppointment = appointment => {
     return async (dispatch) => {
         dispatch(postAppointmentRequest());
-        await fetch('https://timeflex-web.herokuapp.com/appointments', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(appointment),
-            credentials: 'include',
-        })
-            .then(dispatch(postAppointmentSuccess()))
-            .catch(error => dispatch(postAppointmentFailure(error.message)));
+        await NetInfo.fetch().then(async (state) => {
+            if (state.isInternetReachable) {
+                await fetch('https://timeflex-web.herokuapp.com/appointments', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(appointment),
+                    credentials: 'include',
+                })
+                    .then(dispatch(postAppointmentSuccess()))
+                    .catch(error => dispatch(postAppointmentFailure(error.message)));
+            } else {
+                // add to local storage
+            }
+        });
+    };
+};
+
+export const updateAppointment = updatedAppointment => {
+    return async (dispatch, getState) => {
+        dispatch(updateAppointmentRequest());
+        await NetInfo.fetch().then(async (state) => {
+            if (state.isInternetReachable) {
+                const googleId = getState().data.user.googleId;
+                await fetch(`https://timeflex-web.herokuapp.com/appointments/${googleId}/${updatedAppointment.appointmentId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updatedAppointment),
+                    credentials: 'include'
+                })
+                    .then(dispatch(updateAppointmentSuccess()))
+                    .catch(error => dispatch(updateAppointmentFailure(error.message)));
+            } else {
+                // update to local storage
+            }
+        });
     };
 };
 
@@ -111,17 +152,23 @@ export const deleteAppointmentFailure = (error) => {
 export const deleteAppointment = appointmentId => {
     return async (dispatch, getState) => {
         dispatch(deleteAppointmentRequest());
-        const googleId = getState().data.user.googleId;
-        await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId + '/' + appointmentId, {
-            method: 'DELETE',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-        })
-            .then(dispatch(deleteAppointmentSuccess()))
-            .catch(error => dispatch(deleteAppointmentFailure(error.message)));
+        await NetInfo.fetch().then(async (state) => {
+            if (state.isInternetReachable) {
+                const googleId = getState().data.user.googleId;
+                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId + '/' + appointmentId, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+                    .then(dispatch(deleteAppointmentSuccess()))
+                    .catch(error => dispatch(deleteAppointmentFailure(error.message)));
+            } else {
+                // delete from local storage
+            }
+        });
     };
 };
 
@@ -135,22 +182,22 @@ export const setUser = (user) => {
 //data should interms of array with all appointment subject
 export const fectchLocalData = (data) => {
     return {
-        type:'FECTCH_LOCAL',
-        payload:data,
+        type: 'FECTCH_LOCAL',
+        payload: data,
     }
 }
 //This will pass the local apppointment to the redux
-export const createLocalData =  (appointment) => {
+export const createLocalData = (appointment) => {
     return {
-        type:'CREATE_LOCAL',
-        payload:appointment,
+        type: 'CREATE_LOCAL',
+        payload: appointment,
     }
 }
 
 //This will require the appointment id  to delete the appoint in the redux
 export const deleteLocalData = (id) => {
     return {
-        type:'DELETE_LOCAL',
-        payload:id,
+        type: 'DELETE_LOCAL',
+        payload: id,
     }
 }

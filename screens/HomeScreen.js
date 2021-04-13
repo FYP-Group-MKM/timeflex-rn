@@ -18,11 +18,11 @@ const HomeScreen = (props) => {
     const EventFormRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
     const dateString = format(props.currentDate, 'MMM yyyy');
-    const [eventPressed,setEvent] = useState({})
+    const [eventPressed, setEvent] = useState({})
     const [appointments, setAppointments] = useState([])
 
     useEffect(() => {
-        props.fetchAppointments();
+        // props.fetchAppointments();
     }, []);
 
     const translatedAppointments = props.appointments.map(appointment => {
@@ -46,7 +46,7 @@ const HomeScreen = (props) => {
                 <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
             </PaperAppbar.Header >
             <Calendar
-                events={props.appointments}
+                events={translatedAppointments}
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}
@@ -59,7 +59,7 @@ const HomeScreen = (props) => {
             <Portal>
                 <SimpleEventForm sheetRef={simpleEventFormRef} />
                 <SmartPlanningForm sheetRef={smartPlanningFormRef} />
-                <EventForm sheetRef={EventFormRef} appointment={eventPressed}/>
+                <EventForm sheetRef={EventFormRef} appointment={eventPressed} />
                 <FAB.Group
                     open={fabOpen}
                     icon={fabOpen ? 'close' : 'plus'}
