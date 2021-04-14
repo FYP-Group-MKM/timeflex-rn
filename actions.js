@@ -47,9 +47,9 @@ export const fetchAppointments = () => {
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
                 const googleId = getState().data.user.googleId;
-                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+                await fetch('http://localhost:5000/appointments/' + googleId)
                     .then(res => res.json())
-                    .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
+                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
             } else {
                 // fetching data from local db and temporary appointments
@@ -170,6 +170,11 @@ export const deleteAppointment = appointmentId => {
         });
     };
 };
+
+export const mutateAppointments = appointments => ({
+    type: 'MUTATE_APPOINTMENTS',
+    payload: appointments,
+});
 
 export const setUser = (user) => {
     return {

@@ -82,6 +82,11 @@ const dataReducer = (state = initialState, action) => {
                 ...state,
                 user: { ...action.payload }
             };
+        case 'MUTATE_APPOINTMENTS':
+            return {
+                ...state,
+                appointments: action.payload
+            }
         case 'FECTCH_LOCAL':
             return {
                 ...state,

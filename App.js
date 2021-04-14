@@ -18,32 +18,22 @@ const Drawer = createDrawerNavigator();
 
 const App = (props) => {
     const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState({});
 
     useEffect(() => {
-        // AsyncStorage.getItem('timeflexUser')
-        //     .then(user => JSON.parse(user))
-        //     .then(user => props.setUser(user))
-        //     .then(props.fetchAppointments().then(() => console.log(props.appointments)))
-        //     .then(setLoading(false))
-        //     .catch(error => console.log(error))
-        const initializeUserProfile = async () => {
-            const userJSON = await AsyncStorage.getItem('timeflexUser')
-            const user = JSON.parse(userJSON);
-            return user;
-        };
-
-        initializeUserProfile()
-            .then(user => props.setUser(user))
-            .then(props.fetchAppointments())
-            .then(setLoading(false));
-
+        AsyncStorage.getItem('timeflexUser')
+            .then(user => props.setUser(JSON.parse(user)))
+        // .then(props.fetchAppointments())
     }, []);
+    console.log(props.user)
+    console.log(props.appointments)
 
     const handleRedirect = async event => {
         WebBrowser.dismissBrowser();
     };
 
     const handleOAuthLogin = async () => {
+        setLoading(true);
         let redirectUrl = await Linking.getInitialURL();
         Linking.addEventListener('url', handleRedirect);
         try {
@@ -53,12 +43,12 @@ const App = (props) => {
             await AsyncStorage.setItem('timeflexUser', userJSON)
                 .then(props.setUser(JSON.parse(userJSON)))
                 .then(props.fetchAppointments())
-                .then(setLoading(false))
                 .catch(error => console.log(error));
         } catch (err) {
             console.log('ERROR:', err);
         }
         Linking.removeEventListener('url', handleRedirect);
+        setLoading(false);
     };
 
     const routes = ['week', '3days', 'day'].map(mode => {
@@ -70,12 +60,13 @@ const App = (props) => {
         return <Drawer.Screen key={mode} name={name} component={renderScreen} />;
     });
 
+
     return (
         <NavigationContainer >
             <ExpoStatusBar style='auto' />
             {
-                (props.user.googleId && !loading) ?
-                    <Drawer.Navigator>
+                (props.user.googleId) ?
+                    <Drawer.Navigator key={props.appointments}>
                         {routes}
                     </Drawer.Navigator>
                     : <SafeAreaView>

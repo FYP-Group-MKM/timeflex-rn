@@ -4,7 +4,7 @@ import { StyleSheet, SafeAreaView } from 'react-native';
 import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
 import { connect } from 'react-redux';
-import { setCurrentDate, fetchAppointments, setUser } from '../actions';
+import { setCurrentDate, fetchAppointments, setUser, mutateAppointments } from '../actions';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
@@ -19,26 +19,36 @@ const HomeScreen = (props) => {
     const eventFormRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
     const [eventPressed, setEvent] = useState({});
-    const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [appointments, setAppointments] = useState([]);
 
     const dateString = format(props.currentDate, 'MMM yyyy');
 
+
     useEffect(() => {
-        setAppointments(
-            props.appointments.map(appointment => {
-                const translatedAppointment = {
-                    ...appointment,
-                    start: appointment.startDate,
-                    end: appointment.endDate
-                }
-                delete translatedAppointment.startDate;
-                delete translatedAppointment.endDate;
-                return translatedAppointment;
-            })
-        );
+        let isMounted = true;
+
+        const fetchAppointments = async () => {
+            await fetch('http://localhost:5000/appointments/' + props.user.googleId)
+                .then(res => res.json())
+                .then(res => setAppointments(res))
+        }
+        fetchAppointments();
         setLoading(false);
+
+        return () => { isMounted = false };
     }, []);
+
+    const translatedAppointments = appointments.map(appointment => {
+        const translatedAppointment = {
+            ...appointment,
+            start: appointment.startDate,
+            end: appointment.endDate
+        }
+        delete translatedAppointment.startDate;
+        delete translatedAppointment.endDate;
+        return translatedAppointment;
+    });
 
     const handleMenuButtonPress = () => {
         props.navigation.toggleDrawer();
@@ -69,7 +79,7 @@ const HomeScreen = (props) => {
                 <PaperAppbar.Action icon={'calendar-today'} onPress={handleTodayButtonPress} />
             </PaperAppbar.Header >
             <Calendar
-                events={appointments}
+                events={translatedAppointments}
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}
@@ -171,6 +181,7 @@ const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
     fetchAppointments: () => dispatch(fetchAppointments()),
     setUser: (user) => dispatch(setUser(user)),
+    mutateAppointments: (appointments) => dispatch(mutateAppointments(appointments))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
