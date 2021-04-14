@@ -25,6 +25,7 @@ const SmartPlanningForm = (props) => {
     const [validity, setValidity] = useState({});
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [invalidDateMsg, setInvalidDateMsg] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleTitleInput = (text) => setAppointment({ ...appointment, title: text });
     const handleDescriptionInput = (text) => setAppointment({ ...appointment, description: text });
@@ -45,6 +46,8 @@ const SmartPlanningForm = (props) => {
     const handleSubmit = async () => {
         if (!appointmentIsValid()) return;
 
+        setLoading(true)
+
         if (!appointment.divisible) {
             setAppointment({
                 ...appointment,
@@ -52,19 +55,6 @@ const SmartPlanningForm = (props) => {
                 minSession: appointment.exDuration,
             });
         }
-        console.log(props)
-        // props.postAppointment({
-        //     type: 'smart',
-        //     appointment: { ...appointment, googleId: props.user.googleId }
-        // })
-        //     .then(res => {
-        //         console.log(res)
-        // if (res.message === "NO_SOLUTION_AVAILABLE") {
-        //     setInvalidDateMsg('No solution available');
-        //     setSnackbarVisible(true);
-        // }
-        // else props.fetchAppointments();
-        // });
 
         await fetch(`https://timeflex-web.herokuapp.com/appointments`, {
             method: 'POST',
@@ -84,11 +74,12 @@ const SmartPlanningForm = (props) => {
                     setInvalidDateMsg('No solution available');
                     setSnackbarVisible(true);
                 }
-                else props.fetchAppointments();
+                else setTimeout(props.fetchAppointments, 10);
             })
 
         props.sheetRef.current.snapTo(1);
         resetAppointment();
+        setLoading(false)
     };
 
     const resetAppointment = () => setAppointment({
@@ -145,7 +136,7 @@ const SmartPlanningForm = (props) => {
             onCloseStart={Keyboard.dismiss}
             onCloseEnd={resetAppointment}
             renderHeader={renderHeader}
-            renderContent={() => (
+            renderContent={() => !loading ? (
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                     <KeyboardAwareScrollView style={styles.root} >
                         <View style={styles.formTitle}>
@@ -224,7 +215,7 @@ const SmartPlanningForm = (props) => {
                         </Snackbar>
                     </KeyboardAwareScrollView >
                 </TouchableWithoutFeedback>
-            )}
+            ) : <View style={styles.root} />}
         />
     );
 };
@@ -288,9 +279,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         shadowColor: '#333333',
         shadowOffset: { width: -1, height: -5 },
-        shadowRadius: 3,
-        shadowOpacity: 0.2,
-        paddingTop: 20,
+        shadowRadius: 1,
+        shadowOpacity: 0.1,
+        paddingTop: 15,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
     },
@@ -316,7 +307,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     postAppointment: (appointment) => dispatch(postAppointment(appointment)),
-    fetchAppointments: () => dispatch(fetchAppointments())
+    // fetchAppointments: () => dispatch(fetchAppointments())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SmartPlanningForm);

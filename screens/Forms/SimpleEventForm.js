@@ -38,15 +38,13 @@ const SimpleEventForm = (props) => {
 
     const handleSubmit = () => {
         if (!appointmentIsValid()) return;
-
+        props.sheetRef.current.snapTo(1);
         props.postAppointment({
             type: 'simple',
             appointment: { ...appointment, googleId: props.user.googleId }
         })
-            .then(props.fetchAppointments());
-
-        props.sheetRef.current.snapTo(1);
-        resetAppointment();
+            .then(setTimeout(props.fetchAppointments, 10))
+            .then(resetAppointment());
     };
 
     const resetAppointment = () => setAppointment({
@@ -140,6 +138,9 @@ const SimpleEventForm = (props) => {
                             style={styles.description}
                             onChangeText={handleDescriptionInput}
                         />
+
+                        <View style={styles.dummy} />
+
                         <Snackbar
                             visible={snackbarVisible}
                             onDismiss={() => setSnackbarVisible(false)}
@@ -190,14 +191,15 @@ const styles = StyleSheet.create({
     },
     snackbar: {
         // width: '104%'
+        alignSelf: 'flex-end'
     },
     header: {
         backgroundColor: '#FFFFFF',
         shadowColor: '#333333',
         shadowOffset: { width: -1, height: -5 },
-        shadowRadius: 3,
-        shadowOpacity: 0.2,
-        paddingTop: 20,
+        shadowRadius: 1,
+        shadowOpacity: 0.1,
+        paddingTop: 15,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
     },
@@ -211,7 +213,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#00000040',
         marginBottom: 10,
     },
-
+    dummy: {
+        height: 200,
+        backgroundColor: 'white'
+    }
 });
 
 const mapStateToProps = state => ({
@@ -220,7 +225,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     postAppointment: (appointment) => dispatch(postAppointment(appointment)),
-    fetchAppointments: () => dispatch(fetchAppointments())
+    // fetchAppointments: () => dispatch(fetchAppointments())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SimpleEventForm);

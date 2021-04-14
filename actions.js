@@ -47,7 +47,7 @@ export const fetchAppointments = () => {
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
                 const googleId = getState().data.user.googleId;
-                await fetch('http://localhost:5000/appointments/' + googleId)
+                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
                     .then(res => res.json())
                     .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
@@ -104,8 +104,22 @@ export const postAppointment = (appointment) => {
     };
 };
 
+export const updateAppointmentRequest = () => ({
+    type: 'UPDATE_APPOINTMENT_REQUEST',
+});
+
+export const updateAppointmentSuccess = () => ({
+    type: 'UPDATE_APPOINTMENT_SUCCESS',
+});
+
+export const updateAppointmentFailure = (error) => ({
+    type: 'UPDATE_APPOINTMENT_SUCCESS',
+    payload: error
+});
+
 export const updateAppointment = updatedAppointment => {
     return async (dispatch, getState) => {
+        console.log(updatedAppointment.appointmentId)
         dispatch(updateAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {

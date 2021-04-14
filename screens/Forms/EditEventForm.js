@@ -32,7 +32,6 @@ const EditEventForm = (props) => {
         setAppointment(formattedAppointment)
     }, [props.appointment.appointmentId]);
 
-    console.log(appointment)
 
     const renderHeader = () => (
         <View style={styles.header}>
@@ -45,15 +44,16 @@ const EditEventForm = (props) => {
 
     const handleSubmit = () => {
         if (!appointmentIsValid()) return;
-
         props.sheetRef.current.snapTo(1);
+        props.updateAppointment(appointment)
+            .then(setTimeout(props.fetchAppointments, 10))
         resetAppointment();
     };
 
-    const handleDelete = () => {
-        props.deleteAppointment(appointment.appointmentId)
-            .then(props.fetchAppointments());
-        props.sheetRef.current.snapTo(1);
+    const handleDelete = async () => {
+        await props.deleteAppointment(appointment.appointmentId)
+            .then(props.sheetRef.current.snapTo(1))
+            .then(setTimeout(props.fetchAppointments, 10))
     };
 
     const resetAppointment = () => setAppointment({});
@@ -112,7 +112,7 @@ const EditEventForm = (props) => {
                         mode='outlined'
                         dense
                         label='Title'
-                        value={props.appointment.title}
+                        value={appointment.title}
                         style={styles.eventTitle}
                         error={validity.titleIsEmpty}
                         onChangeText={handleTitleInput}
@@ -189,9 +189,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         shadowColor: '#333333',
         shadowOffset: { width: -1, height: -5 },
-        shadowRadius: 3,
-        shadowOpacity: 0.2,
-        paddingTop: 20,
+        shadowRadius: 1,
+        shadowOpacity: 0.1,
+        paddingTop: 15,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
     },
@@ -218,7 +218,7 @@ const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
     updateAppointment: appointment => dispatch(updateAppointment(appointment)),
     deleteAppointment: appointmentId => dispatch(deleteAppointment(appointmentId)),
-    fetchAppointments: () => dispatch(fetchAppointments(appointmentId)),
+    // fetchAppointments: () => dispatch(fetchAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditEventForm);

@@ -24,22 +24,19 @@ const HomeScreen = (props) => {
 
     const dateString = format(props.currentDate, 'MMM yyyy');
 
-
     useEffect(() => {
         let isMounted = true;
-
-        const fetchAppointments = async () => {
-            await fetch('http://localhost:5000/appointments/' + props.user.googleId)
-                .then(res => res.json())
-                .then(res => setAppointments(res))
-        }
         fetchAppointments();
         setLoading(false);
-
-        return () => {
-            isMounted = false;
-        };
+        return () => isMounted = false;
     }, []);
+
+    const fetchAppointments = async () => {
+        await fetch('https://timeflex-web.herokuapp.com/appointments/' + props.user.googleId)
+            .then(res => res.json())
+            .then(res => setAppointments(res))
+            .catch(error => console.log(error))
+    };
 
     const translatedAppointments = appointments.map(appointment => {
         const translatedAppointment = {
@@ -91,9 +88,9 @@ const HomeScreen = (props) => {
                 }}
             />
             <Portal>
-                <SimpleEventForm sheetRef={simpleEventFormRef} />
-                <SmartPlanningForm sheetRef={smartPlanningFormRef} />
-                <EditEventForm sheetRef={eventFormRef} appointment={eventPressed} />
+                <SimpleEventForm sheetRef={simpleEventFormRef} fetchAppointments={fetchAppointments} />
+                <SmartPlanningForm sheetRef={smartPlanningFormRef} fetchAppointments={fetchAppointments} />
+                <EditEventForm sheetRef={eventFormRef} appointment={eventPressed} fetchAppointments={fetchAppointments} />
                 <FAB.Group
                     open={fabOpen}
                     icon={fabOpen ? 'close' : 'plus'}
@@ -142,9 +139,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         shadowColor: '#333333',
         shadowOffset: { width: -1, height: -5 },
-        shadowRadius: 3,
-        shadowOpacity: 0.2,
-        paddingTop: 20,
+        shadowRadius: 1,
+        shadowOpacity: 0.1,
+        paddingTop: 15,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
     },

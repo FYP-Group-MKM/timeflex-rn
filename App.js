@@ -17,8 +17,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const Drawer = createDrawerNavigator();
 
 const App = (props) => {
-    const [loading, setLoading] = useState(true);
-    const [user, setUser] = useState({});
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         AsyncStorage.getItem('timeflexUser')
