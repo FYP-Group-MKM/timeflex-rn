@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button, View } from 'react-native-paper';
 import { SafeAreaView } from 'react-native';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
@@ -17,12 +17,27 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const Drawer = createDrawerNavigator();
 
 const App = (props) => {
-    const [user, setUser] = useState({});
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        props.setUser(user);
-        props.fetchAppointments();
-    }, [user]);
+        // AsyncStorage.getItem('timeflexUser')
+        //     .then(user => JSON.parse(user))
+        //     .then(user => props.setUser(user))
+        //     .then(props.fetchAppointments().then(() => console.log(props.appointments)))
+        //     .then(setLoading(false))
+        //     .catch(error => console.log(error))
+        const initializeUserProfile = async () => {
+            const userJSON = await AsyncStorage.getItem('timeflexUser')
+            const user = JSON.parse(userJSON);
+            return user;
+        };
+
+        initializeUserProfile()
+            .then(user => props.setUser(user))
+            .then(props.fetchAppointments())
+            .then(setLoading(false));
+
+    }, []);
 
     const handleRedirect = async event => {
         WebBrowser.dismissBrowser();
@@ -32,12 +47,14 @@ const App = (props) => {
         let redirectUrl = await Linking.getInitialURL();
         Linking.addEventListener('url', handleRedirect);
         try {
-            // let authResult = await WebBrowser.openAuthSessionAsync(`http://localhost:5000/expo-auth/google`, redirectUrl);
-            let authResult = await WebBrowser.openAuthSessionAsync(`http://localhost:5000/expo-auth/google`, redirectUrl);
+            let authResult = await WebBrowser.openAuthSessionAsync(`https://timeflex-web.herokuapp.com/expo-auth/google`, redirectUrl);
             const userURIComponent = authResult.url.replace('exp://exp.host/@darren1208/timeflex-rn/', '');
             const userJSON = decodeURIComponent(userURIComponent);
-            const userObj = JSON.parse(userJSON);
-            setUser(userObj);
+            await AsyncStorage.setItem('timeflexUser', userJSON)
+                .then(props.setUser(JSON.parse(userJSON)))
+                .then(props.fetchAppointments())
+                .then(setLoading(false))
+                .catch(error => console.log(error));
         } catch (err) {
             console.log('ERROR:', err);
         }
@@ -54,10 +71,10 @@ const App = (props) => {
     });
 
     return (
-        <NavigationContainer>
+        <NavigationContainer >
             <ExpoStatusBar style='auto' />
             {
-                (props.user.googleId) ?
+                (props.user.googleId && !loading) ?
                     <Drawer.Navigator>
                         {routes}
                     </Drawer.Navigator>

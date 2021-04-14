@@ -47,7 +47,7 @@ export const fetchAppointments = () => {
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
                 const googleId = getState().data.user.googleId;
-                await fetch('http://localhost:5000/appointments/' + googleId)
+                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
                     .then(res => res.json())
                     .then(appointments => dispatch(fetchAppointmentsSuccess(appointments)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
@@ -81,13 +81,12 @@ export const postAppointmentFailure = error => {
 };
 
 export const postAppointment = (appointment) => {
-    return async (dispatch, getState) => {
+    return async (dispatch) => {
         console.log('postAppointment')
         dispatch(postAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
-                const googleId = getState().data.user.googleId;
-                await fetch('http://localhost:5000/appointments', {
+                await fetch('https://timeflex-web.herokuapp.com/appointments', {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
@@ -111,7 +110,7 @@ export const updateAppointment = updatedAppointment => {
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
                 const googleId = getState().data.user.googleId;
-                await fetch(`http://localhost:5000/appointments/${googleId}/${updatedAppointment.appointmentId}`, {
+                await fetch(`https://timeflex-web.herokuapp.com/appointments/${googleId}/${updatedAppointment.appointmentId}`, {
                     method: 'PUT',
                     headers: {
                         'Accept': 'application/json',
@@ -155,7 +154,7 @@ export const deleteAppointment = appointmentId => {
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
                 const googleId = getState().data.user.googleId;
-                await fetch('http://localhost:5000/appointments/' + googleId + '/' + appointmentId, {
+                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId + '/' + appointmentId, {
                     method: 'DELETE',
                     headers: {
                         'Accept': 'application/json',

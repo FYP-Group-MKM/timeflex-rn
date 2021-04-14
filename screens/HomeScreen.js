@@ -11,6 +11,7 @@ import SmartPlanningForm from './Forms/SmartPlanningForm';
 import EditEventForm from './Forms/EditEventForm'
 
 import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
@@ -25,11 +26,16 @@ const HomeScreen = (props) => {
 
     useEffect(() => {
         setAppointments(
-            props.appointments.map(appointment => ({
-                ...appointment,
-                start: appointment.startDate,
-                end: appointment.endDate,
-            }))
+            props.appointments.map(appointment => {
+                const translatedAppointment = {
+                    ...appointment,
+                    start: appointment.startDate,
+                    end: appointment.endDate
+                }
+                delete translatedAppointment.startDate;
+                delete translatedAppointment.endDate;
+                return translatedAppointment;
+            })
         );
         setLoading(false);
     }, []);
@@ -39,13 +45,28 @@ const HomeScreen = (props) => {
         props.fetchAppointments();
     };
 
+    const handleTodayButtonPress = () => {
+        props.setCurrentDate(new Date());
+        logout();
+    };
+
+    const logout = async () => {
+        try {
+            props.setUser({});
+            props.fetchAppointments();
+            await AsyncStorage.removeItem('timeflexUser');
+            console.log('removed user from async storage');
+        } catch (e) {
+            // remove error
+        }
+    };
+
     return !loading ? (
         <SafeAreaView style={styles.container}>
             <PaperAppbar.Header style={styles.appbar}>
                 <PaperAppbar.Action icon={'menu'} onPress={handleMenuButtonPress} />
                 <PaperAppbar.Content title={dateString} />
-                <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setUser({})} />
-                {/* <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} /> */}
+                <PaperAppbar.Action icon={'calendar-today'} onPress={handleTodayButtonPress} />
             </PaperAppbar.Header >
             <Calendar
                 events={appointments}
@@ -53,7 +74,6 @@ const HomeScreen = (props) => {
                 mode={props.mode}
                 height={1}
                 onPressEvent={(event) => {
-                    console.log(event)
                     setEvent(event)
                     eventFormRef.current.snapTo(0)
                 }}

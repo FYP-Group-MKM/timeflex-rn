@@ -1,23 +1,16 @@
 import addHours from 'date-fns/addHours';
 import setMinutes from 'date-fns/setMinutes';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { TextInput, Button, Switch, Snackbar, Headline, Subheading } from 'react-native-paper';
 import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 import { connect } from 'react-redux';
-import { updateAppointment } from '../../actions';
+import { updateAppointment, deleteAppointment, fetchAppointments } from '../../actions';
 
 
 const EditEventForm = (props) => {
-    const [appointment, setAppointment] = useState({
-        title: props.appointment.title,
-        startDate: setMinutes(addHours(new Date(), 1), 0),
-        endDate: setMinutes(addHours(new Date(), 2), 0),
-        // allDay: false,
-        // description: props.appointment.description
-        ...props.appointment
-    });
+    const [appointment, setAppointment] = useState({})
     const [validity, setValidity] = useState({});
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [invalidDateMsg, setInvalidDateMsg] = useState('');
@@ -28,6 +21,10 @@ const EditEventForm = (props) => {
     const handleStartDateInput = (date) => setAppointment({ ...appointment, startDate: date });
     const handlEendDateInput = (date) => setAppointment({ ...appointment, endDate: date });
 
+    useEffect(() => {
+        setAppointment(props.appointment)
+    }, []);
+
     const renderHeader = () => (
         <View style={styles.header}>
             <View style={styles.panelHeader}>
@@ -36,18 +33,19 @@ const EditEventForm = (props) => {
         </View>
     );
 
+
     const handleSubmit = () => {
         if (!appointmentIsValid()) return;
-
-
 
         props.sheetRef.current.snapTo(1);
         resetAppointment();
     };
 
     const handleDelete = () => {
-
-    }
+        props.deleteAppointment(appointment.appointmentId)
+            .then(props.fetchAppointments());
+        props.sheetRef.current.snapTo(1);
+    };
 
     const resetAppointment = () => setAppointment({
         title: '',
@@ -105,7 +103,7 @@ const EditEventForm = (props) => {
                     <View style={styles.formTitle}>
                         <Headline>Edit Event</Headline>
                         <Button onPress={handleSubmit}>Edit</Button>
-                        <Button onPress={() => console.log('Here is the appointment', props.appointment)}>Delete</Button>
+                        <Button onPress={handleDelete}>Delete</Button>
                     </View>
                     <TextInput
                         mode='outlined'
@@ -121,8 +119,8 @@ const EditEventForm = (props) => {
                             <Switch value={appointment.allDay} onValueChange={handleAllDaySwitchToggle} />
                             <Subheading>All Day</Subheading>
                         </View>
-                        <ButtonDateTimePicker date={appointment.startDate} handleDateSelect={handleStartDateInput} />
-                        <ButtonDateTimePicker date={appointment.endDate} handleDateSelect={handlEendDateInput} />
+                        <ButtonDateTimePicker date={appointment.start ? appointment.start : new Date()} handleDateSelect={handleStartDateInput} />
+                        <ButtonDateTimePicker date={appointment.end ? appointment.end : new Date()} handleDateSelect={handlEendDateInput} />
                     </View>
                     <TextInput
                         mode='outlined'
@@ -214,6 +212,9 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
+    updateAppointment: appointment => dispatch(updateAppointment(appointment)),
+    deleteAppointment: appointmentId => dispatch(deleteAppointment(appointmentId)),
+    fetchAppointments: () => dispatch(fetchAppointments(appointmentId)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditEventForm);

@@ -6,8 +6,10 @@ import { StyleSheet, View, Keyboard, TouchableWithoutFeedback } from 'react-nati
 import { TextInput, Button, Switch, Snackbar, Subheading, Headline, Paragraph } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import BottomSheet from 'reanimated-bottom-sheet';
-
 import ButtonDateTimePicker from './ButtonDateTimePicker';
+
+import { connect } from 'react-redux';
+import { postAppointment, fetchAppointments } from '../../actions';
 
 
 const SmartPlanningForm = (props) => {
@@ -50,6 +52,40 @@ const SmartPlanningForm = (props) => {
                 minSession: appointment.exDuration,
             });
         }
+        console.log(props)
+        // props.postAppointment({
+        //     type: 'smart',
+        //     appointment: { ...appointment, googleId: props.user.googleId }
+        // })
+        //     .then(res => {
+        //         console.log(res)
+        // if (res.message === "NO_SOLUTION_AVAILABLE") {
+        //     setInvalidDateMsg('No solution available');
+        //     setSnackbarVisible(true);
+        // }
+        // else props.fetchAppointments();
+        // });
+
+        await fetch(`https://timeflex-web.herokuapp.com/appointments`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                type: 'smart',
+                appointment: { ...appointment, googleId: props.user.googleId }
+            }),
+            credentials: 'include'
+        })
+            .then(res => res.json())
+            .then((res) => {
+                if (res.message === "NO_SOLUTION_AVAILABLE") {
+                    setInvalidDateMsg('No solution available');
+                    setSnackbarVisible(true);
+                }
+                else props.fetchAppointments();
+            })
 
         props.sheetRef.current.snapTo(1);
         resetAppointment();
@@ -237,7 +273,7 @@ const styles = StyleSheet.create({
         marginTop: 15,
     },
     snackbar: {
-        width: '104%'
+        // width: '100%'
     },
     sessionTextInputRow: {
         display: 'flex',
@@ -274,5 +310,13 @@ const styles = StyleSheet.create({
     }
 });
 
+const mapStateToProps = state => ({
+    user: state.data.user,
+});
 
-export default SmartPlanningForm;
+const mapDispatchToProps = dispatch => ({
+    postAppointment: (appointment) => dispatch(postAppointment(appointment)),
+    fetchAppointments: () => dispatch(fetchAppointments())
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(SmartPlanningForm);

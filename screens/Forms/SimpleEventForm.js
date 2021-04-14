@@ -41,7 +41,7 @@ const SimpleEventForm = (props) => {
 
         props.postAppointment({
             type: 'simple',
-            appointment: { ...appointment, googleId: user.googleId }
+            appointment: { ...appointment, googleId: props.user.googleId }
         })
             .then(props.fetchAppointments());
 
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
         marginTop: 15,
     },
     snackbar: {
-        width: '104%'
+        // width: '104%'
     },
     header: {
         backgroundColor: '#FFFFFF',
