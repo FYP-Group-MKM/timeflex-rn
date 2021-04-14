@@ -68,7 +68,16 @@ const EditEventForm = (props) => {
             .catch(error => console.log(error))
     };
 
-    const resetAppointment = () => setAppointment({});
+    const resetAppointment = () => {
+        const formattedAppointment = {
+            ...props.appointment,
+            startDate: props.appointment.start ? new Date(props.appointment.start) : new Date(),
+            endDate: props.appointment.end ? new Date(props.appointment.end) : new Date()
+        };
+        delete formattedAppointment.start;
+        delete formattedAppointment.end;
+        setAppointment(formattedAppointment);
+    };
 
     const appointmentIsValid = () => {
         const { title, startDate, endDate } = appointment;
