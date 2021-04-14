@@ -22,8 +22,17 @@ const EditEventForm = (props) => {
     const handlEendDateInput = (date) => setAppointment({ ...appointment, endDate: date });
 
     useEffect(() => {
-        setAppointment(props.appointment)
-    }, []);
+        const formattedAppointment = {
+            ...props.appointment,
+            startDate: new Date(props.appointment.start),
+            endDate: new Date(props.appointment.end)
+        };
+        delete formattedAppointment.start;
+        delete formattedAppointment.end;
+        setAppointment(formattedAppointment)
+    }, [props.appointment.appointmentId]);
+
+    console.log(appointment)
 
     const renderHeader = () => (
         <View style={styles.header}>
@@ -47,13 +56,7 @@ const EditEventForm = (props) => {
         props.sheetRef.current.snapTo(1);
     };
 
-    const resetAppointment = () => setAppointment({
-        title: '',
-        startDate: setMinutes(addHours(new Date(), 1), 0),
-        endDate: setMinutes(addHours(new Date(), 2), 0),
-        allDay: false,
-        description: ''
-    });
+    const resetAppointment = () => setAppointment({});
 
     const appointmentIsValid = () => {
         const { title, startDate, endDate } = appointment;
@@ -114,14 +117,14 @@ const EditEventForm = (props) => {
                         error={validity.titleIsEmpty}
                         onChangeText={handleTitleInput}
                     />
-                    <View>
+                    {appointment.startDate && appointment.endDate ? <View>
                         <View style={styles.switch}>
                             <Switch value={appointment.allDay} onValueChange={handleAllDaySwitchToggle} />
                             <Subheading>All Day</Subheading>
                         </View>
-                        <ButtonDateTimePicker date={appointment.start ? appointment.start : new Date()} handleDateSelect={handleStartDateInput} />
-                        <ButtonDateTimePicker date={appointment.end ? appointment.end : new Date()} handleDateSelect={handlEendDateInput} />
-                    </View>
+                        <ButtonDateTimePicker date={appointment.startDate} handleDateSelect={handleStartDateInput} />
+                        <ButtonDateTimePicker date={appointment.endDate} handleDateSelect={handlEendDateInput} />
+                    </View> : null}
                     <TextInput
                         mode='outlined'
                         label="Description"

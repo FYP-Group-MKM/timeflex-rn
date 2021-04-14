@@ -23,10 +23,7 @@ const App = (props) => {
     useEffect(() => {
         AsyncStorage.getItem('timeflexUser')
             .then(user => props.setUser(JSON.parse(user)))
-        // .then(props.fetchAppointments())
     }, []);
-    console.log(props.user)
-    console.log(props.appointments)
 
     const handleRedirect = async event => {
         WebBrowser.dismissBrowser();
