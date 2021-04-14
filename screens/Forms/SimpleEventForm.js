@@ -194,10 +194,6 @@ const styles = StyleSheet.create({
     description: {
         marginTop: 15,
     },
-    snackbar: {
-        // width: '104%'
-        alignSelf: 'flex-end'
-    },
     header: {
         backgroundColor: '#FFFFFF',
         shadowColor: '#333333',

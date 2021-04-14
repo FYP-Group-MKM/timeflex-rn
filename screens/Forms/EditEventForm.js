@@ -1,12 +1,11 @@
-import addHours from 'date-fns/addHours';
-import setMinutes from 'date-fns/setMinutes';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { TextInput, Button, Switch, Snackbar, Headline, Subheading } from 'react-native-paper';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 import { connect } from 'react-redux';
-import { updateAppointment, deleteAppointment, fetchAppointments } from '../../actions';
+import { updateAppointment, deleteAppointment } from '../../actions';
 
 
 const EditEventForm = (props) => {
@@ -115,55 +114,62 @@ const EditEventForm = (props) => {
             onCloseEnd={resetAppointment}
             renderHeader={renderHeader}
             renderContent={() => !loading ? (
-                <View style={styles.root}>
-                    <View style={styles.formTitle}>
-                        <Headline>Edit Event</Headline>
-                        <View style={styles.options}>
-                            <Button onPress={handleSubmit}>Save</Button>
-                            <Button onPress={handleDelete}>Delete</Button>
-                        </View>
-                    </View>
-                    <TextInput
-                        mode='outlined'
-                        dense
-                        label='Title'
-                        value={appointment.title}
-                        style={styles.eventTitle}
-                        error={validity.titleIsEmpty}
-                        onChangeText={handleTitleInput}
-                    />
-                    {appointment.startDate && appointment.endDate ?
-                        <View>
-                            <View style={styles.switch}>
-                                <Switch value={appointment.allDay} onValueChange={handleAllDaySwitchToggle} />
-                                <Subheading>All Day</Subheading>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                    <KeyboardAwareScrollView style={styles.root}>
+                        <View style={styles.formTitle}>
+                            <Headline>Edit Event</Headline>
+                            <View style={styles.options}>
+                                <Button onPress={handleSubmit}>Save</Button>
+                                <Button onPress={handleDelete}>Delete</Button>
                             </View>
-                            <ButtonDateTimePicker date={appointment.startDate} handleDateSelect={handleStartDateInput} />
-                            <ButtonDateTimePicker date={appointment.endDate} handleDateSelect={handlEendDateInput} />
-                        </View> : null}
-                    <TextInput
-                        mode='outlined'
-                        label="Description"
-                        value={appointment.description}
-                        multiline
-                        numberOfLines={2}
-                        style={styles.description}
-                        onChangeText={handleDescriptionInput}
-                    />
-                    <Snackbar
-                        visible={snackbarVisible}
-                        onDismiss={() => setSnackbarVisible(false)}
-                        style={styles.snackbar}
-                    >
-                        {invalidDateMsg}
-                    </Snackbar>
-                </View >
+                        </View>
+                        <TextInput
+                            mode='outlined'
+                            dense
+                            label='Title'
+                            value={appointment.title}
+                            style={styles.eventTitle}
+                            error={validity.titleIsEmpty}
+                            onChangeText={handleTitleInput}
+                        />
+                        {appointment.startDate && appointment.endDate ?
+                            <View>
+                                <View style={styles.switch}>
+                                    <Switch value={appointment.allDay} onValueChange={handleAllDaySwitchToggle} />
+                                    <Subheading>All Day</Subheading>
+                                </View>
+                                <ButtonDateTimePicker date={appointment.startDate} handleDateSelect={handleStartDateInput} />
+                                <ButtonDateTimePicker date={appointment.endDate} handleDateSelect={handlEendDateInput} />
+                            </View> : null}
+                        <TextInput
+                            mode='outlined'
+                            label="Description"
+                            value={appointment.description}
+                            multiline
+                            numberOfLines={2}
+                            style={styles.description}
+                            onChangeText={handleDescriptionInput}
+                        />
+                        <View style={styles.dummy} />
+                        <Snackbar
+                            visible={snackbarVisible}
+                            onDismiss={() => setSnackbarVisible(false)}
+                            style={styles.snackbar}
+                        >
+                            {invalidDateMsg}
+                        </Snackbar>
+                    </KeyboardAwareScrollView >
+                </TouchableWithoutFeedback>
             ) : <View style={styles.root} />}
         />
     );
 };
 
 const styles = StyleSheet.create({
+    options: {
+        display: 'flex',
+        flexDirection: 'row'
+    },
     root: {
         backgroundColor: 'white',
         padding: 16,
@@ -180,10 +186,6 @@ const styles = StyleSheet.create({
     eventTitle: {
         marginBottom: 20,
     },
-    options: {
-        display: 'flex',
-        flexDirection: 'row'
-    },
     switch: {
         display: 'flex',
         flexDirection: 'row',
@@ -192,7 +194,7 @@ const styles = StyleSheet.create({
         maxWidth: 120,
         marginBottom: 20,
     },
-    datePicker: {
+    datePickerRow: {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -200,9 +202,6 @@ const styles = StyleSheet.create({
     },
     description: {
         marginTop: 15,
-    },
-    snackbar: {
-        width: '104%'
     },
     header: {
         backgroundColor: '#FFFFFF',
@@ -224,7 +223,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#00000040',
         marginBottom: 10,
     },
-
+    dummy: {
+        height: 200,
+        backgroundColor: 'white'
+    }
 });
 
 

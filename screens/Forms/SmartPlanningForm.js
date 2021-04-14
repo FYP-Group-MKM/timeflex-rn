@@ -74,11 +74,12 @@ const SmartPlanningForm = (props) => {
                     setInvalidDateMsg('No solution available');
                     setSnackbarVisible(true);
                 }
-                else setTimeout(props.fetchAppointments, 25);
+                else props.fetchAppointments()
+                    .then(res => {
+                        props.sheetRef.current.snapTo(1);
+                        resetAppointment();
+                    });
             })
-
-        props.sheetRef.current.snapTo(1);
-        resetAppointment();
         setLoading(false)
     };
 
@@ -262,9 +263,6 @@ const styles = StyleSheet.create({
     },
     description: {
         marginTop: 15,
-    },
-    snackbar: {
-        // width: '100%'
     },
     sessionTextInputRow: {
         display: 'flex',
