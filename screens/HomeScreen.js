@@ -36,7 +36,9 @@ const HomeScreen = (props) => {
         fetchAppointments();
         setLoading(false);
 
-        return () => { isMounted = false };
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     const translatedAppointments = appointments.map(appointment => {

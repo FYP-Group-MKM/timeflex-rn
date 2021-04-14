@@ -24,8 +24,8 @@ const EditEventForm = (props) => {
     useEffect(() => {
         const formattedAppointment = {
             ...props.appointment,
-            startDate: new Date(props.appointment.start),
-            endDate: new Date(props.appointment.end)
+            startDate: props.appointment.start ? new Date(props.appointment.start) : new Date(),
+            endDate: props.appointment.end ? new Date(props.appointment.end) : new Date()
         };
         delete formattedAppointment.start;
         delete formattedAppointment.end;
@@ -117,14 +117,15 @@ const EditEventForm = (props) => {
                         error={validity.titleIsEmpty}
                         onChangeText={handleTitleInput}
                     />
-                    {appointment.startDate && appointment.endDate ? <View>
-                        <View style={styles.switch}>
-                            <Switch value={appointment.allDay} onValueChange={handleAllDaySwitchToggle} />
-                            <Subheading>All Day</Subheading>
-                        </View>
-                        <ButtonDateTimePicker date={appointment.startDate} handleDateSelect={handleStartDateInput} />
-                        <ButtonDateTimePicker date={appointment.endDate} handleDateSelect={handlEendDateInput} />
-                    </View> : null}
+                    {appointment.startDate && appointment.endDate ?
+                        <View>
+                            <View style={styles.switch}>
+                                <Switch value={appointment.allDay} onValueChange={handleAllDaySwitchToggle} />
+                                <Subheading>All Day</Subheading>
+                            </View>
+                            <ButtonDateTimePicker date={appointment.startDate} handleDateSelect={handleStartDateInput} />
+                            <ButtonDateTimePicker date={appointment.endDate} handleDateSelect={handlEendDateInput} />
+                        </View> : null}
                     <TextInput
                         mode='outlined'
                         label="Description"
