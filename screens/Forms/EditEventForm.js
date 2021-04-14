@@ -14,6 +14,7 @@ const EditEventForm = (props) => {
     const [validity, setValidity] = useState({});
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [invalidDateMsg, setInvalidDateMsg] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleTitleInput = (text) => setAppointment({ ...appointment, title: text });
     const handleDescriptionInput = (text) => setAppointment({ ...appointment, description: text });
@@ -44,16 +45,28 @@ const EditEventForm = (props) => {
 
     const handleSubmit = () => {
         if (!appointmentIsValid()) return;
-        props.sheetRef.current.snapTo(1);
+        setLoading(true);
         props.updateAppointment(appointment)
-            .then(setTimeout(props.fetchAppointments, 10))
-        resetAppointment();
+            .then(setTimeout(() => props.fetchAppointments()
+                .then(res => {
+                    if (res) {
+                        resetAppointment()
+                        setLoading(false)
+                        props.sheetRef.current.snapTo(1)
+                    }
+                }), 25))
+            .catch(error => console.log(error))
     };
 
-    const handleDelete = async () => {
-        await props.deleteAppointment(appointment.appointmentId)
-            .then(props.sheetRef.current.snapTo(1))
-            .then(setTimeout(props.fetchAppointments, 10))
+    const handleDelete = () => {
+        setLoading(true);
+        props.deleteAppointment(appointment.appointmentId)
+            .then(() => props.fetchAppointments()
+                .then(res => {
+                    setLoading(false);
+                    props.sheetRef.current.snapTo(1);
+                }))
+            .catch(error => console.log(error))
     };
 
     const resetAppointment = () => setAppointment({});
@@ -101,12 +114,14 @@ const EditEventForm = (props) => {
             snapPoints={['95%', 0]}
             onCloseEnd={resetAppointment}
             renderHeader={renderHeader}
-            renderContent={() => (
+            renderContent={() => !loading ? (
                 <View style={styles.root}>
                     <View style={styles.formTitle}>
                         <Headline>Edit Event</Headline>
-                        <Button onPress={handleSubmit}>Edit</Button>
-                        <Button onPress={handleDelete}>Delete</Button>
+                        <View style={styles.options}>
+                            <Button onPress={handleSubmit}>Save</Button>
+                            <Button onPress={handleDelete}>Delete</Button>
+                        </View>
                     </View>
                     <TextInput
                         mode='outlined'
@@ -143,7 +158,7 @@ const EditEventForm = (props) => {
                         {invalidDateMsg}
                     </Snackbar>
                 </View >
-            )}
+            ) : <View style={styles.root} />}
         />
     );
 };
@@ -152,7 +167,7 @@ const styles = StyleSheet.create({
     root: {
         backgroundColor: 'white',
         padding: 16,
-        height: '100%',
+        height: 800,
         display: 'flex',
     },
     formTitle: {
@@ -164,6 +179,10 @@ const styles = StyleSheet.create({
     },
     eventTitle: {
         marginBottom: 20,
+    },
+    options: {
+        display: 'flex',
+        flexDirection: 'row'
     },
     switch: {
         display: 'flex',

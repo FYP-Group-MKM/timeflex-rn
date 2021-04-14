@@ -74,7 +74,7 @@ const SmartPlanningForm = (props) => {
                     setInvalidDateMsg('No solution available');
                     setSnackbarVisible(true);
                 }
-                else setTimeout(props.fetchAppointments, 10);
+                else setTimeout(props.fetchAppointments, 25);
             })
 
         props.sheetRef.current.snapTo(1);
@@ -171,7 +171,6 @@ const SmartPlanningForm = (props) => {
                             onChangeText={handleExDurationInput}
                         />
 
-
                         {appointment.divisible ? <View style={styles.sessionTextInputRow}>
                             <TextInput
                                 mode='outlined'
@@ -194,6 +193,7 @@ const SmartPlanningForm = (props) => {
                                 onChangeText={handleMaxSessionInput}
                             />
                         </View> : null}
+
                         <TextInput
                             mode='outlined'
                             label="Description"

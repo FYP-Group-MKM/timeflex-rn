@@ -21,6 +21,7 @@ const SimpleEventForm = (props) => {
     const [validity, setValidity] = useState({});
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [invalidDateMsg, setInvalidDateMsg] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleTitleInput = (text) => setAppointment({ ...appointment, title: text });
     const handleDescriptionInput = (text) => setAppointment({ ...appointment, description: text });
@@ -38,13 +39,17 @@ const SimpleEventForm = (props) => {
 
     const handleSubmit = () => {
         if (!appointmentIsValid()) return;
-        props.sheetRef.current.snapTo(1);
+        setLoading(true);
         props.postAppointment({
             type: 'simple',
             appointment: { ...appointment, googleId: props.user.googleId }
         })
-            .then(setTimeout(props.fetchAppointments, 10))
-            .then(resetAppointment());
+            .then(res => props.fetchAppointments()
+                .then(res => {
+                    setLoading(false);
+                    props.sheetRef.current.snapTo(1);
+                })
+            );
     };
 
     const resetAppointment = () => setAppointment({
@@ -99,7 +104,7 @@ const SimpleEventForm = (props) => {
             onCloseStart={Keyboard.dismiss}
             onCloseEnd={resetAppointment}
             renderHeader={renderHeader}
-            renderContent={() => (
+            renderContent={() => !loading ? (
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                     <KeyboardAwareScrollView style={styles.root}>
                         <View style={styles.formTitle}>
@@ -150,7 +155,7 @@ const SimpleEventForm = (props) => {
                         </Snackbar>
                     </KeyboardAwareScrollView >
                 </TouchableWithoutFeedback>
-            )}
+            ) : <View style={styles.root} />}
         />
     );
 };
@@ -159,7 +164,7 @@ const styles = StyleSheet.create({
     root: {
         backgroundColor: 'white',
         padding: 16,
-        height: '100%',
+        height: 800,
         display: 'flex',
     },
     formTitle: {
