@@ -38,7 +38,7 @@ const App = (props) => {
             const userJSON = decodeURIComponent(userURIComponent);
             await AsyncStorage.setItem('timeflexUser', userJSON)
                 .then(props.setUser(JSON.parse(userJSON)))
-                .then(props.fetchAppointments())
+                // .then(props.fetchAppointments())
                 .catch(error => console.log(error));
         } catch (err) {
             console.log('ERROR:', err);
@@ -62,7 +62,7 @@ const App = (props) => {
             <ExpoStatusBar style='auto' />
             {
                 (props.user.googleId) ?
-                    <Drawer.Navigator key={props.appointments}>
+                    <Drawer.Navigator>
                         {routes}
                     </Drawer.Navigator>
                     : <SafeAreaView>

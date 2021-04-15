@@ -3,8 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView } from 'react-native';
 import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
+
 import { connect } from 'react-redux';
-import { setCurrentDate, fetchAppointments, setUser, mutateAppointments } from '../actions';
+import { setCurrentDate, fetchAppointments, fetchAppointmentsSuccess, fetchAppointmentsRequest } from '../actions';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
@@ -25,18 +26,22 @@ const HomeScreen = (props) => {
     const dateString = format(props.currentDate, 'MMM yyyy');
 
     useEffect(() => {
-        let isMounted = true;
+        // let isMounted = true;
         fetchAppointments();
-        return () => isMounted = false;
+        // return () => isMounted = false;
+
     }, []);
 
     const checkInternetReachable = async () => await NetInfo.fetch().then(state => state.isInternetReachable);
 
     const fetchAppointments = async () => {
-        if (!checkInternetReachable()) {
-            await fetch('https://timeflex-web.herokuapp.com/appointments/' + props.user.googleId)
+        console.log('buggy shit')
+        if (checkInternetReachable()) {
+            props.fetchAppointmentsRequest();
+            fetch('https://timeflex-web.herokuapp.com/appointments/' + props.user.googleId)
                 .then(res => res.json())
-                .then(res => setAppointments(res))
+                // .then(res => props.fetchAppointmentsSuccess(res))
+                // .then(res => setAppointments(res))
                 .catch(error => console.log(error))
         } else {
             // await AsyncStorage.removeItem('timeflexAppointments');
@@ -46,9 +51,9 @@ const HomeScreen = (props) => {
                     // console.log(appointments)
                 });
         }
-    }
+    };
 
-    const translatedAppointments = appointments.map(appointment => {
+    const translatedAppointments = props.appointments.map(appointment => {
         const translatedAppointment = {
             ...appointment,
             start: appointment.startDate,
@@ -71,7 +76,6 @@ const HomeScreen = (props) => {
 
     const logout = async () => {
         try {
-            props.setUser({});
             props.fetchAppointments();
             await AsyncStorage.removeItem('timeflexUser');
             console.log('removed user from async storage');
@@ -98,7 +102,7 @@ const HomeScreen = (props) => {
                 }}
             />
             <Portal>
-                <SimpleEventForm sheetRef={simpleEventFormRef} fetchAppointments={fetchAppointments} />
+                <SimpleEventForm sheetRef={simpleEventFormRef} fetchAppointments={fetchAppointments} today={() => props.setCurrentDate(new Date())} />
                 <SmartPlanningForm sheetRef={smartPlanningFormRef} fetchAppointments={fetchAppointments} />
                 <EditEventForm sheetRef={eventFormRef} appointment={eventPressed} fetchAppointments={fetchAppointments} />
                 <FAB.Group
@@ -189,8 +193,8 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
     fetchAppointments: () => dispatch(fetchAppointments()),
-    setUser: (user) => dispatch(setUser(user)),
-    mutateAppointments: (appointments) => dispatch(mutateAppointments(appointments))
+    fetchAppointmentsSuccess: (appointments) => dispatch(fetchAppointmentsSuccess(appointments)),
+    fetchAppointmentsRequest: () => dispatch(fetchAppointmentsRequest()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

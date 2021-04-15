@@ -40,6 +40,7 @@ const SimpleEventForm = (props) => {
     const handleSubmit = () => {
         if (!appointmentIsValid()) return;
         setLoading(true);
+
         props.postAppointment({
             type: 'simple',
             appointment: { ...appointment, googleId: props.user.googleId }
@@ -47,8 +48,9 @@ const SimpleEventForm = (props) => {
             .then(props.fetchAppointments()
                 .then(() => {
                     console.log('fetched appointments')
-                    setLoading(false);
+                    resetAppointment();
                     props.sheetRef.current.snapTo(1);
+                    setLoading(false);
                 }));
     };
 

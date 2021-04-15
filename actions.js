@@ -23,39 +23,39 @@ export const setAppointmentForm = (isOpen) => {
     };
 };
 
-// export const fetchAppointments = () => {
-//     return async (dispatch, getState) => {
-//         dispatch(fetchAppointmentsRequest());
-//         await NetInfo.fetch().then(async (state) => {
-//             if (!state.isInternetReachable) {
-//                 const googleId = getState().data.user.googleId;
-//                 await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
-//                     .then(res => res.json())
-//                     .then(data => dispatch(fetchAppointmentsSuccess(data)))
-//                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-//             } else {
-//                 try {
-//                     let appointments = [];
-//                     AsyncStorage.getAllKeys()
-//                         .then(keys => keys.map(key => {
-//                             AsyncStorage.getItem(key)
-//                                 .then(appointment => JSON.parse(appointment))
-//                                 .then(appointment => appointments = [...appointments, appointment])
-//                         }));
-//                 } catch (e) {
-//                     console.log(e);
-//                 }
-//             }
-//         });
-//     };
-// };
+export const fetchAppointments = () => {
+    return async (dispatch, getState) => {
+        dispatch(fetchAppointmentsRequest());
+        await NetInfo.fetch().then(async (state) => {
+            if (state.isInternetReachable) {
+                const googleId = getState().data.user.googleId;
+                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+                    .then(res => res.json())
+                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
+                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+            } else {
+                try {
+                    let appointments = [];
+                    AsyncStorage.getAllKeys()
+                        .then(keys => keys.map(key => {
+                            AsyncStorage.getItem(key)
+                                .then(appointment => JSON.parse(appointment))
+                                .then(appointment => appointments = [...appointments, appointment])
+                        }));
+                } catch (e) {
+                    console.log(e);
+                }
+            }
+        });
+    };
+};
 
 export const postAppointment = (appointment) => {
     return async (dispatch) => {
         console.log('postAppointment')
         dispatch(postAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
-            if (!state.isInternetReachable) {
+            if (state.isInternetReachable) {
                 await fetch('https://timeflex-web.herokuapp.com/appointments', {
                     method: 'POST',
                     headers: {
@@ -96,7 +96,7 @@ export const updateAppointment = updatedAppointment => {
         dispatch(updateAppointmentRequest());
         const googleId = getState().data.user.googleId;
         await NetInfo.fetch().then(async (state) => {
-            if (!state.isInternetReachable) {
+            if (state.isInternetReachable) {
                 await fetch(`https://timeflex-web.herokuapp.com/appointments/${googleId}/${updatedAppointment.appointmentId}`, {
                     method: 'PUT',
                     headers: {
@@ -115,9 +115,6 @@ export const updateAppointment = updatedAppointment => {
                     await AsyncStorage.getItem('timeflexAppointments')
                         .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
                         .then(data => { if (data) appointments = [...data] })
-                    // const newAppointment = { ...appointment.appointment, appointmentId: uuid.v4() };
-                    // const updatedAppointments = [...appointments, newAppointment];
-                    // appointments = appointments.filter(appointment => appointment.appointmentId !== updatedAppointment.appointmentId);
                     const updatedAppointments = [
                         ...appointments.filter(appointment => appointment.appointmentId !== updatedAppointment.appointmentId),
                         updatedAppointment
@@ -136,7 +133,7 @@ export const deleteAppointment = appointmentId => {
     return async (dispatch, getState) => {
         dispatch(deleteAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
-            if (!state.isInternetReachable) {
+            if (state.isInternetReachable) {
                 const googleId = getState().data.user.googleId;
                 await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId + '/' + appointmentId, {
                     method: 'DELETE',
@@ -187,7 +184,7 @@ export const fetchAppointmentsRequest = () => {
 export const fetchAppointmentsSuccess = appointments => {
     return {
         type: 'FETCH_APPOINTMENTS_SUCCESS',
-        payload: appointments
+        payload: [...appointments]
     };
 };
 
