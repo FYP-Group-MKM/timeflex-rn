@@ -45,7 +45,6 @@ export const fetchAppointments = () => {
 
 export const postAppointment = (appointment) => {
     return async (dispatch) => {
-        console.log('postAppointment')
         dispatch(postAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {

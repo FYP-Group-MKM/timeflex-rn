@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { TextInput, Button, Switch, Snackbar, Headline, Subheading } from 'react-native-paper';
+import { TextInput, Button, Switch, Snackbar, Headline, Subheading, ActivityIndicator } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
@@ -13,7 +13,7 @@ const EditEventForm = (props) => {
     const [validity, setValidity] = useState({});
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [invalidDateMsg, setInvalidDateMsg] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const handleTitleInput = (text) => setAppointment({ ...appointment, title: text });
     const handleDescriptionInput = (text) => setAppointment({ ...appointment, description: text });
@@ -29,10 +29,10 @@ const EditEventForm = (props) => {
         };
         delete formattedAppointment.start;
         delete formattedAppointment.end;
-        setAppointment(formattedAppointment)
+        setAppointment(formattedAppointment);
+        setLoading(false);
     }, [props.appointment.appointmentId]);
 
-    // console.log(appointment)
     const renderHeader = () => (
         <View style={styles.header}>
             <View style={styles.panelHeader}>
@@ -41,40 +41,38 @@ const EditEventForm = (props) => {
         </View>
     );
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!appointmentIsValid()) return;
         setLoading(true);
-        props.updateAppointment(appointment)
-            .then(props.fetchAppointments()
-                .then(() => {
-                    resetAppointment()
-                    setLoading(false)
-                }))
-            .catch(error => console.log(error))
-        props.sheetRef.current.snapTo(1)
+        await props.updateAppointment(appointment)
+        setTimeout(() => props.fetchAppointments()
+            .then(resetAppointment())
+            .then(props.sheetRef.current.snapTo(1))
+            .then(setLoading(false)), 25);
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         setLoading(true);
-        props.deleteAppointment(appointment.appointmentId)
-            .then(props.fetchAppointments()
-                .then(() => {
-                    resetAppointment()
-                    props.sheetRef.current.snapTo(1);
-                    setLoading(false);
-                }))
-            .catch(error => console.log(error))
+        await props.deleteAppointment(appointment.appointmentId);
+        setTimeout(() => props.fetchAppointments()
+            .then(resetAppointment())
+            .then(props.sheetRef.current.snapTo(1))
+            .then(setLoading(false)), 25);
     };
 
     const resetAppointment = () => {
-        const formattedAppointment = {
-            // ...props.appointment,
-            // startDate: props.appointment.start ? new Date(props.appointment.start) : new Date(),
-            // endDate: props.appointment.end ? new Date(props.appointment.end) : new Date()
-        };
+        const formattedAppointment = {};
         delete formattedAppointment.start;
         delete formattedAppointment.end;
         setAppointment(formattedAppointment);
+        props.setEvent({});
+        props.sheetRef.current.snapTo(1);
+        resetSnackbar();
+    };
+
+    const resetSnackbar = () => {
+        setSnackbarVisible(false);
+        setInvalidDateMsg('');
     };
 
     const appointmentIsValid = () => {
@@ -167,12 +165,21 @@ const EditEventForm = (props) => {
                         </Snackbar>
                     </KeyboardAwareScrollView >
                 </TouchableWithoutFeedback>
-            ) : <View style={styles.root} />}
+            ) : <View style={styles.loading} >
+                <ActivityIndicator animating={true} />
+                <Subheading>Loading...</Subheading>
+            </View>}
         />
     );
 };
 
 const styles = StyleSheet.create({
+    loading: {
+        height: '100%',
+        backgroundColor: 'white',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
     options: {
         display: 'flex',
         flexDirection: 'row'
@@ -230,10 +237,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#00000040',
         marginBottom: 10,
     },
-    dummy: {
-        height: 200,
-        backgroundColor: 'white'
-    }
+    snackbar: {
+        marginTop: 25,
+        position: 'absolute',
+    },
+    // dummy: {
+    //     height: 200,
+    //     backgroundColor: 'white'
+    // }
 });
 
 

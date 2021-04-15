@@ -2,8 +2,8 @@ import setHours from 'date-fns/setHours';
 import setMinutes from 'date-fns/setMinutes';
 import addWeeks from 'date-fns/addWeeks';
 import React, { useState } from 'react';
-import { StyleSheet, View, Keyboard, TouchableWithoutFeedback } from 'react-native';
-import { TextInput, Button, Switch, Snackbar, Subheading, Headline, Paragraph } from 'react-native-paper';
+import { StyleSheet, View, Keyboard, TouchableWithoutFeedback, Dimensions } from 'react-native';
+import { TextInput, Button, Switch, Snackbar, Subheading, Headline, Paragraph, ActivityIndicator } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
@@ -46,7 +46,7 @@ const SmartPlanningForm = (props) => {
     const handleSubmit = async () => {
         if (!appointmentIsValid()) return;
 
-        setLoading(true)
+        setLoading(true);
 
         if (!appointment.divisible) {
             setAppointment({
@@ -71,27 +71,37 @@ const SmartPlanningForm = (props) => {
             .then(res => res.json())
             .then((res) => {
                 if (res.message === "NO_SOLUTION_AVAILABLE") {
+                    setLoading(false);
                     setInvalidDateMsg('No solution available');
                     setSnackbarVisible(true);
+                } else {
+                    props.fetchAppointments()
+                        .then(() => {
+                            props.sheetRef.current.snapTo(1);
+                            resetAppointment();
+                            setLoading(false);
+                        });
                 }
-                else props.fetchAppointments()
-                    .then(() => {
-                        props.sheetRef.current.snapTo(1);
-                        resetAppointment();
-                    });
             })
-        setLoading(false)
     };
 
-    const resetAppointment = () => setAppointment({
-        title: '',
-        deadline: addWeeks(setMinutes(setHours(new Date(), 0), 0), 1),
-        exDuration: null,
-        divisible: true,
-        minSession: 1,
-        maxSession: '',
-        description: '',
-    });
+    const resetAppointment = () => {
+        setAppointment({
+            title: '',
+            deadline: addWeeks(setMinutes(setHours(new Date(), 0), 0), 1),
+            exDuration: null,
+            divisible: true,
+            minSession: 1,
+            maxSession: '',
+            description: '',
+        });
+        resetSnackbar();
+    }
+
+    const resetSnackbar = () => {
+        setSnackbarVisible(false);
+        setInvalidDateMsg('');
+    };
 
     const appointmentIsValid = () => {
         const { title, deadline, exDuration, divisible, minSession, maxSession } = appointment;
@@ -216,16 +226,25 @@ const SmartPlanningForm = (props) => {
                         </Snackbar>
                     </KeyboardAwareScrollView >
                 </TouchableWithoutFeedback>
-            ) : <View style={styles.root} />}
+            ) : <View style={styles.loading} >
+                <ActivityIndicator animating={true} />
+                <Subheading>Loading...</Subheading>
+            </View>}
         />
     );
 };
 
 const styles = StyleSheet.create({
+    loading: {
+        height: '100%',
+        backgroundColor: 'white',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
     root: {
         backgroundColor: 'white',
         padding: 16,
-        height: 800,
+        height: Dimensions.get('window').height,
         display: 'flex',
     },
     formTitle: {
@@ -293,10 +312,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#00000040',
         marginBottom: 10,
     },
-    dummy: {
-        height: 200,
-        backgroundColor: 'white'
-    }
+    snackbar: {
+        marginTop: 25,
+        position: 'absolute',
+    },
+    // dummy: {
+    //     display: 'flex',
+    //     minHeight: '20%',
+    //     backgroundColor: 'blue'
+    // }
 });
 
 const mapStateToProps = state => ({

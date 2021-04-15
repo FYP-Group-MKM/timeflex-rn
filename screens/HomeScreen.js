@@ -20,36 +20,11 @@ const HomeScreen = (props) => {
     const eventFormRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
     const [eventPressed, setEvent] = useState({});
-    const [loading, setLoading] = useState(true);
-    const [appointments, setAppointments] = useState([]);
-
     const dateString = format(props.currentDate, 'MMM yyyy');
 
     useEffect(() => {
-        // let isMounted = true;
         props.fetchAppointments();
-        // return () => isMounted = false;
-
     }, []);
-
-    // const checkInternetReachable = async () => await NetInfo.fetch().then(state => state.isInternetReachable);
-
-    // const fetchAppointments = async () => {
-    //     console.log('buggy shit')
-    //     if (checkInternetReachable()) {
-    //         props.fetchAppointmentsRequest();
-    //         fetch('https://timeflex-web.herokuapp.com/appointments/' + props.user.googleId)
-    //             .then(res => res.json())
-    //             .then(res => props.fetchAppointmentsSuccess(res))
-    //             // .then(res => setAppointments(res))
-    //             .catch(error => console.log(error))
-    //     } else {
-    //         // await AsyncStorage.getItem('timeflexAppointments')
-    //         //     .then(appointmentsJSON => {
-    //         //         if (appointmentsJSON) setAppointments(JSON.parse(appointmentsJSON).data)
-    //         //     });
-    //     }
-    // };
 
     const translatedAppointments = props.appointments.map(appointment => {
         const translatedAppointment = {
@@ -69,7 +44,7 @@ const HomeScreen = (props) => {
 
     const handleTodayButtonPress = () => {
         props.setCurrentDate(new Date());
-        // logout();
+        props.fetchAppointments();
     };
 
     const logout = async () => {
@@ -95,14 +70,14 @@ const HomeScreen = (props) => {
                 mode={props.mode}
                 height={1}
                 onPressEvent={(event) => {
-                    setEvent(event)
-                    eventFormRef.current.snapTo(0)
+                    setEvent(event);
+                    eventFormRef.current.snapTo(0);
                 }}
             />
             <Portal>
                 <SimpleEventForm sheetRef={simpleEventFormRef} today={() => props.setCurrentDate(new Date())} />
                 <SmartPlanningForm sheetRef={smartPlanningFormRef} />
-                <EditEventForm sheetRef={eventFormRef} appointment={eventPressed} />
+                <EditEventForm sheetRef={eventFormRef} appointment={eventPressed} setEvent={setEvent} />
                 <FAB.Group
                     open={fabOpen}
                     icon={fabOpen ? 'close' : 'plus'}

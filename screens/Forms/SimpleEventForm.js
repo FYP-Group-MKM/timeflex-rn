@@ -2,7 +2,7 @@ import addHours from 'date-fns/addHours';
 import setMinutes from 'date-fns/setMinutes';
 import React, { useState } from 'react';
 import { StyleSheet, View, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { TextInput, Button, Switch, Snackbar, Headline, Subheading } from 'react-native-paper';
+import { TextInput, Button, Switch, Snackbar, Headline, Subheading, ActivityIndicator } from 'react-native-paper';
 import BottomSheet from 'reanimated-bottom-sheet';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
@@ -37,29 +37,34 @@ const SimpleEventForm = (props) => {
         </View>
     );
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!appointmentIsValid()) return;
         setLoading(true);
-
-        props.postAppointment({
+        await props.postAppointment({
             type: 'simple',
             appointment: { ...appointment, googleId: props.user.googleId }
-        })
-            .then(props.fetchAppointments()
-                .then(() => {
-                    resetAppointment();
-                    props.sheetRef.current.snapTo(1);
-                    setLoading(false);
-                }));
+        });
+        setTimeout(() => props.fetchAppointments()
+            .then(resetAppointment())
+            .then(props.sheetRef.current.snapTo(1))
+            .then(setLoading(false)), 25);
     };
 
-    const resetAppointment = () => setAppointment({
-        title: '',
-        startDate: setMinutes(addHours(new Date(), 1), 0),
-        endDate: setMinutes(addHours(new Date(), 2), 0),
-        allDay: false,
-        description: ''
-    });
+    const resetAppointment = () => {
+        setAppointment({
+            title: '',
+            startDate: setMinutes(addHours(new Date(), 1), 0),
+            endDate: setMinutes(addHours(new Date(), 2), 0),
+            allDay: false,
+            description: ''
+        });
+        resetSnackbar();
+    }
+
+    const resetSnackbar = () => {
+        setSnackbarVisible(false);
+        setInvalidDateMsg('');
+    };
 
     const appointmentIsValid = () => {
         const { title, startDate, endDate } = appointment;
@@ -148,19 +153,28 @@ const SimpleEventForm = (props) => {
 
                         <Snackbar
                             visible={snackbarVisible}
-                            onDismiss={() => setSnackbarVisible(false)}
+                            onDismiss={resetSnackbar}
                             style={styles.snackbar}
                         >
                             {invalidDateMsg}
                         </Snackbar>
                     </KeyboardAwareScrollView >
                 </TouchableWithoutFeedback>
-            ) : <View style={styles.root} />}
+            ) : <View style={styles.loading} >
+                <ActivityIndicator animating={true} />
+                <Subheading>Loading...</Subheading>
+            </View>}
         />
     );
 };
 
 const styles = StyleSheet.create({
+    loading: {
+        height: '100%',
+        backgroundColor: 'white',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
     root: {
         backgroundColor: 'white',
         padding: 16,
@@ -214,10 +228,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#00000040',
         marginBottom: 10,
     },
-    dummy: {
-        height: 200,
-        backgroundColor: 'white'
-    }
+    snackbar: {
+        marginTop: 25,
+        position: 'absolute',
+    },
+    // dummy: {
+    //     height: 200,
+    //     backgroundColor: 'white'
+    // }
 });
 
 const mapStateToProps = state => ({
