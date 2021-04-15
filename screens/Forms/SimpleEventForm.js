@@ -45,11 +45,10 @@ const SimpleEventForm = (props) => {
             appointment: { ...appointment, googleId: props.user.googleId }
         })
             .then(res => props.fetchAppointments()
-                .then(res => {
+                .then(() => {
                     setLoading(false);
                     props.sheetRef.current.snapTo(1);
-                })
-            );
+                }));
     };
 
     const resetAppointment = () => setAppointment({

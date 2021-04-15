@@ -22,84 +22,39 @@ export const setAppointmentForm = (isOpen) => {
     };
 };
 
-export const fetchAppointmentsRequest = () => {
-    return {
-        type: 'FETCH_APPOINTMENTS_REQUEST',
-    };
-};
+// export const fetchAppointments = () => {
+//     return async (dispatch, getState) => {
+//         dispatch(fetchAppointmentsRequest());
+//         await NetInfo.fetch().then(async (state) => {
+//             if (!state.isInternetReachable) {
+//                 const googleId = getState().data.user.googleId;
+//                 await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+//                     .then(res => res.json())
+//                     .then(data => dispatch(fetchAppointmentsSuccess(data)))
+//                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+//             } else {
+//                 try {
+//                     let appointments = [];
+//                     AsyncStorage.getAllKeys()
+//                         .then(keys => keys.map(key => {
+//                             AsyncStorage.getItem(key)
+//                                 .then(appointment => JSON.parse(appointment))
+//                                 .then(appointment => appointments = [...appointments, appointment])
+//                         }));
+//                 } catch (e) {
+//                     console.log(e);
+//                 }
+//             }
+//         });
+//     };
+// };
 
-export const fetchAppointmentsSuccess = appointments => {
-    return {
-        type: 'FETCH_APPOINTMENTS_SUCCESS',
-        payload: appointments
-    };
-};
-
-export const fetchAppointmentsFailure = error => {
-    return {
-        type: 'FETCH_APPOINTMENTS_FAILURE',
-        payload: error
-    };
-};
-
-export const fetchAppointments = () => {
-    return async (dispatch, getState) => {
-        dispatch(fetchAppointmentsRequest());
-        await NetInfo.fetch().then(async (state) => {
-            if (state.isInternetReachable) {
-                const googleId = getState().data.user.googleId;
-                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
-                    .then(res => res.json())
-                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
-                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-            } else {
-                // fetching data from local db and temporary appointments
-                // ...
-                let keys = []
-                    try {
-                        keys = await AsyncStorage.getAllKeys()
-                        keys.map((keys) => {
-                            await AsyncStorage.getItem(keys)
-                            return jsonValue != null ? JSON.parse(jsonValue) : null
-                        })
-                        //keyrs are all object
-                    } catch(e) {
-                        // read key error
-                    }
-                
-                // pass the fetched data to redux store
-                // ...
-                
-            }
-        });
-    };
-};
-
-export const postAppointmentRequest = () => {
-    return {
-        type: 'POST_APPOINTMENT_REQUEST',
-    };
-};
-
-export const postAppointmentSuccess = () => {
-    return {
-        type: 'POST_APPOINTMENT_SUCCESS'
-    };
-};
-
-export const postAppointmentFailure = error => {
-    return {
-        type: 'POST_APPOINTMENT_FAILURE',
-        payload: error
-    };
-};
-
-export const postAppointment = (appointment,getState) => {
+export const postAppointment = (appointment) => {
     return async (dispatch) => {
         console.log('postAppointment')
         dispatch(postAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
-            if (state.isInternetReachable) {
+            if (!state.isInternetReachable) {
                 await fetch('https://timeflex-web.herokuapp.com/appointments', {
                     method: 'POST',
                     headers: {
@@ -112,31 +67,28 @@ export const postAppointment = (appointment,getState) => {
                     .then(dispatch(postAppointmentSuccess()))
                     .catch(error => dispatch(postAppointmentFailure(error.message)));
             } else {
-                // add to local storage
-                
-                try {
-                    const jsonValue = JSON.stringify(value)
-                    await AsyncStorage.setItem(appointment.appointmentId, jsonValue)
-                  } catch (e) {
-                    console.log(e)
-                  }
+                if (appointment.type === 'simple') {
+                    try {
+                        let appointments = [];
+                        await AsyncStorage.getItem('timeflexAppointments')
+                            .then(appointmentsJSON => JSON.parse(appointmentsJSON).data)
+                            .then(data => { if (data) appointments = [...data] })
+                        const newAppointment = { ...appointment.appointment };
+                        appointments = [...appointments, newAppointment];
+                        const appointmentsJSON = { data: appointments };
+                        await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON));
+                    } catch (e) {
+                        console.log(e)
+                    }
+                }
+
+                if (appointment.type === 'smart') {
+
+                }
             }
         });
     };
 };
-
-export const updateAppointmentRequest = () => ({
-    type: 'UPDATE_APPOINTMENT_REQUEST',
-});
-
-export const updateAppointmentSuccess = () => ({
-    type: 'UPDATE_APPOINTMENT_SUCCESS',
-});
-
-export const updateAppointmentFailure = (error) => ({
-    type: 'UPDATE_APPOINTMENT_SUCCESS',
-    payload: error
-});
 
 export const updateAppointment = updatedAppointment => {
     return async (dispatch, getState) => {
@@ -159,39 +111,19 @@ export const updateAppointment = updatedAppointment => {
                 // update to local storage
                 try {
                     const jsonValue = await AsyncStorage.getItem(googleId)
-                    if(jsonValue != null) {
+                    if (jsonValue != null) {
                         await AsyncStorage.setItem(updatedAppointment.appointmentId, jsonValue)
                     }
                     return jsonValue != null ? JSON.parse(jsonValue) : null
-                  } catch(e) {
+                } catch (e) {
                     // read error
                     console.log(e)
-                  }
-                
-                  console.log('Done. for set updae')
-                
+                }
+
+                console.log('Done. for set updae')
+
             }
         });
-    };
-};
-
-export const deleteAppointmentRequest = () => {
-    return {
-        type: 'DELETE_APPOINTMENT'
-    };
-};
-
-export const deleteAppointmentSuccess = (appointments) => {
-    return {
-        type: 'DELETE_APPOINTMENT_SUCCESS',
-        payload: appointments
-    };
-};
-
-export const deleteAppointmentFailure = (error) => {
-    return {
-        type: 'DELETE_APPOINTMENT_FAILURE',
-        payload: error
     };
 };
 
@@ -215,11 +147,11 @@ export const deleteAppointment = appointmentId => {
                 // delete from local storage
                 try {
                     await AsyncStorage.removeItem(appointmentId)
-                  } catch(e) {
+                } catch (e) {
                     console.log(e)
-                  }
-                
-                  console.log('Done.')
+                }
+
+                console.log('Done.')
             }
         });
     };
@@ -236,6 +168,79 @@ export const setUser = (user) => {
         payload: { ...user }
     };
 };
+
+export const fetchAppointmentsRequest = () => {
+    return {
+        type: 'FETCH_APPOINTMENTS_REQUEST',
+    };
+};
+
+export const fetchAppointmentsSuccess = appointments => {
+    return {
+        type: 'FETCH_APPOINTMENTS_SUCCESS',
+        payload: appointments
+    };
+};
+
+export const fetchAppointmentsFailure = error => {
+    return {
+        type: 'FETCH_APPOINTMENTS_FAILURE',
+        payload: error
+    };
+};
+
+export const postAppointmentRequest = () => {
+    return {
+        type: 'POST_APPOINTMENT_REQUEST',
+    };
+};
+
+export const postAppointmentSuccess = () => {
+    return {
+        type: 'POST_APPOINTMENT_SUCCESS'
+    };
+};
+
+export const postAppointmentFailure = error => {
+    return {
+        type: 'POST_APPOINTMENT_FAILURE',
+        payload: error
+    };
+};
+
+export const updateAppointmentRequest = () => ({
+    type: 'UPDATE_APPOINTMENT_REQUEST',
+});
+
+export const updateAppointmentSuccess = () => ({
+    type: 'UPDATE_APPOINTMENT_SUCCESS',
+});
+
+export const updateAppointmentFailure = (error) => ({
+    type: 'UPDATE_APPOINTMENT_SUCCESS',
+    payload: error
+});
+
+export const deleteAppointmentRequest = () => {
+    return {
+        type: 'DELETE_APPOINTMENT'
+    };
+};
+
+export const deleteAppointmentSuccess = (appointments) => {
+    return {
+        type: 'DELETE_APPOINTMENT_SUCCESS',
+        payload: appointments
+    };
+};
+
+export const deleteAppointmentFailure = (error) => {
+    return {
+        type: 'DELETE_APPOINTMENT_FAILURE',
+        payload: error
+    };
+};
+
 // The below is the action for adding the appointment to the redux appopintment
 //data should interms of array with all appointment subject
 export const fectchLocalData = (data) => {
@@ -259,3 +264,4 @@ export const deleteLocalData = (id) => {
         payload: id,
     }
 }
+

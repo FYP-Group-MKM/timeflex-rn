@@ -31,12 +31,20 @@ const HomeScreen = (props) => {
         return () => isMounted = false;
     }, []);
 
+    const checkInternetReachable = async () => await NetInfo.fetch().then(state => state.isInternetReachable);
+
     const fetchAppointments = async () => {
-        await fetch('https://timeflex-web.herokuapp.com/appointments/' + props.user.googleId)
-            .then(res => res.json())
-            .then(res => setAppointments(res))
-            .catch(error => console.log(error))
-    };
+        if (!checkInternetReachable()) {
+            await fetch('https://timeflex-web.herokuapp.com/appointments/' + props.user.googleId)
+                .then(res => res.json())
+                .then(res => setAppointments(res))
+                .catch(error => console.log(error))
+        } else {
+            await AsyncStorage.getItem('timeflexAppointments')
+                .then(appointmentsJSON => JSON.parse(appointmentsJSON).data)
+                .then(appointments => { if (appointments) setAppointments([...appointments]) });
+        }
+    }
 
     const translatedAppointments = appointments.map(appointment => {
         const translatedAppointment = {
@@ -51,12 +59,12 @@ const HomeScreen = (props) => {
 
     const handleMenuButtonPress = () => {
         props.navigation.toggleDrawer();
-        props.fetchAppointments();
+        fetchAppointments();
     };
 
     const handleTodayButtonPress = () => {
         props.setCurrentDate(new Date());
-        logout();
+        // logout();
     };
 
     const logout = async () => {
