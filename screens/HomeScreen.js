@@ -5,14 +5,11 @@ import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
 
 import { connect } from 'react-redux';
-import { setCurrentDate, fetchAppointments, fetchAppointmentsSuccess, fetchAppointmentsRequest } from '../actions';
+import { setCurrentDate, fetchAppointments } from '../actions';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
 import EditEventForm from './Forms/EditEventForm'
-
-import NetInfo from '@react-native-community/netinfo';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
@@ -47,16 +44,6 @@ const HomeScreen = (props) => {
         props.fetchAppointments();
     };
 
-    const logout = async () => {
-        try {
-            props.fetchAppointments();
-            await AsyncStorage.removeItem('timeflexUser');
-            console.log('removed user from async storage');
-        } catch (e) {
-            // remove error
-        }
-    };
-
     return (
         <SafeAreaView style={styles.container}>
             <PaperAppbar.Header style={styles.appbar}>
@@ -83,11 +70,11 @@ const HomeScreen = (props) => {
                     icon={fabOpen ? 'close' : 'plus'}
                     fabStyle={styles.fab}
                     actions={[
-                        {
-                            icon: 'school',
-                            label: 'Class',
-                            onPress: () => { },
-                        },
+                        // {
+                        //     icon: 'school',
+                        //     label: 'Class',
+                        //     onPress: () => { },
+                        // },
                         {
                             icon: 'calendar-search',
                             label: 'Smart Planning',
@@ -166,8 +153,6 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
     fetchAppointments: () => dispatch(fetchAppointments()),
-    fetchAppointmentsSuccess: (appointments) => dispatch(fetchAppointmentsSuccess(appointments)),
-    fetchAppointmentsRequest: () => dispatch(fetchAppointmentsRequest()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

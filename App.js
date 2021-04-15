@@ -10,18 +10,19 @@ import { fetchAppointments, setUser } from './actions';
 
 import * as Linking from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser';
+
 import HomeScreen from './screens/HomeScreen';
+import LogoutScreen from './screens/LogoutScreen';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Drawer = createDrawerNavigator();
 
 const App = (props) => {
-    const [loading, setLoading] = useState(false);
-
     useEffect(() => {
         AsyncStorage.getItem('timeflexUser')
             .then(user => props.setUser(JSON.parse(user)))
+            .then(props.fetchAppointments());
     }, []);
 
     const handleRedirect = async event => {
@@ -29,7 +30,6 @@ const App = (props) => {
     };
 
     const handleOAuthLogin = async () => {
-        setLoading(true);
         let redirectUrl = await Linking.getInitialURL();
         Linking.addEventListener('url', handleRedirect);
         try {
@@ -44,7 +44,6 @@ const App = (props) => {
             console.log('ERROR:', err);
         }
         Linking.removeEventListener('url', handleRedirect);
-        setLoading(false);
     };
 
     const routes = ['week', '3days', 'day'].map(mode => {
@@ -62,6 +61,7 @@ const App = (props) => {
             <ExpoStatusBar style='auto' />
             <Drawer.Navigator>
                 {routes}
+                <Drawer.Screen name='Logout' component={LogoutScreen} />
             </Drawer.Navigator>
         </NavigationContainer>
         : <SafeAreaView>
