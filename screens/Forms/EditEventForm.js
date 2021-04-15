@@ -32,7 +32,7 @@ const EditEventForm = (props) => {
         setAppointment(formattedAppointment)
     }, [props.appointment.appointmentId]);
 
-
+    // console.log(appointment)
     const renderHeader = () => (
         <View style={styles.header}>
             <View style={styles.panelHeader}>
@@ -41,27 +41,25 @@ const EditEventForm = (props) => {
         </View>
     );
 
-
     const handleSubmit = () => {
         if (!appointmentIsValid()) return;
         setLoading(true);
         props.updateAppointment(appointment)
-            .then(setTimeout(() => props.fetchAppointments()
-                .then(res => {
-                    if (res) {
-                        resetAppointment()
-                        setLoading(false)
-                        props.sheetRef.current.snapTo(1)
-                    }
-                }), 25))
+            .then(props.fetchAppointments()
+                .then(() => {
+                    resetAppointment()
+                    setLoading(false)
+                }))
             .catch(error => console.log(error))
+        props.sheetRef.current.snapTo(1)
     };
 
     const handleDelete = () => {
         setLoading(true);
         props.deleteAppointment(appointment.appointmentId)
-            .then(() => props.fetchAppointments()
-                .then(res => {
+            .then(props.fetchAppointments()
+                .then(() => {
+                    resetAppointment()
                     setLoading(false);
                     props.sheetRef.current.snapTo(1);
                 }))

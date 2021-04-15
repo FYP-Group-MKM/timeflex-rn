@@ -44,8 +44,9 @@ const SimpleEventForm = (props) => {
             type: 'simple',
             appointment: { ...appointment, googleId: props.user.googleId }
         })
-            .then(res => props.fetchAppointments()
+            .then(props.fetchAppointments()
                 .then(() => {
+                    console.log('fetched appointments')
                     setLoading(false);
                     props.sheetRef.current.snapTo(1);
                 }));

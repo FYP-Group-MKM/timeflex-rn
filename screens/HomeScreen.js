@@ -27,7 +27,6 @@ const HomeScreen = (props) => {
     useEffect(() => {
         let isMounted = true;
         fetchAppointments();
-        setLoading(false);
         return () => isMounted = false;
     }, []);
 
@@ -40,9 +39,12 @@ const HomeScreen = (props) => {
                 .then(res => setAppointments(res))
                 .catch(error => console.log(error))
         } else {
+            // await AsyncStorage.removeItem('timeflexAppointments');
             await AsyncStorage.getItem('timeflexAppointments')
-                .then(appointmentsJSON => JSON.parse(appointmentsJSON).data)
-                .then(appointments => { if (appointments) setAppointments([...appointments]) });
+                .then(appointmentsJSON => {
+                    if (appointmentsJSON) setAppointments(JSON.parse(appointmentsJSON).data)
+                    // console.log(appointments)
+                });
         }
     }
 
@@ -78,7 +80,7 @@ const HomeScreen = (props) => {
         }
     };
 
-    return !loading ? (
+    return (
         <SafeAreaView style={styles.container}>
             <PaperAppbar.Header style={styles.appbar}>
                 <PaperAppbar.Action icon={'menu'} onPress={handleMenuButtonPress} />
@@ -126,7 +128,7 @@ const HomeScreen = (props) => {
                 />
             </Portal>
         </SafeAreaView >
-    ) : null;
+    );
 };
 
 

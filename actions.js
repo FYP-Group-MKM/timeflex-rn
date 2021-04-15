@@ -1,5 +1,6 @@
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import uuid from 'uuid';
 
 export const setCurrentDate = (date) => {
     return {
@@ -71,14 +72,14 @@ export const postAppointment = (appointment) => {
                     try {
                         let appointments = [];
                         await AsyncStorage.getItem('timeflexAppointments')
-                            .then(appointmentsJSON => JSON.parse(appointmentsJSON).data)
+                            .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
                             .then(data => { if (data) appointments = [...data] })
-                        const newAppointment = { ...appointment.appointment };
-                        appointments = [...appointments, newAppointment];
-                        const appointmentsJSON = { data: appointments };
+                        const newAppointment = { ...appointment.appointment, appointmentId: uuid.v4() };
+                        const updatedAppointments = [...appointments, newAppointment];
+                        const appointmentsJSON = { data: updatedAppointments };
                         await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON));
                     } catch (e) {
-                        console.log(e)
+                        console.log(e);
                     }
                 }
 
@@ -95,7 +96,7 @@ export const updateAppointment = updatedAppointment => {
         dispatch(updateAppointmentRequest());
         const googleId = getState().data.user.googleId;
         await NetInfo.fetch().then(async (state) => {
-            if (state.isInternetReachable) {
+            if (!state.isInternetReachable) {
                 await fetch(`https://timeflex-web.herokuapp.com/appointments/${googleId}/${updatedAppointment.appointmentId}`, {
                     method: 'PUT',
                     headers: {
@@ -108,20 +109,24 @@ export const updateAppointment = updatedAppointment => {
                     .then(dispatch(updateAppointmentSuccess()))
                     .catch(error => dispatch(updateAppointmentFailure(error.message)));
             } else {
-                // update to local storage
                 try {
-                    const jsonValue = await AsyncStorage.getItem(googleId)
-                    if (jsonValue != null) {
-                        await AsyncStorage.setItem(updatedAppointment.appointmentId, jsonValue)
-                    }
-                    return jsonValue != null ? JSON.parse(jsonValue) : null
+                    console.log(updatedAppointment)
+                    let appointments = [];
+                    await AsyncStorage.getItem('timeflexAppointments')
+                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
+                        .then(data => { if (data) appointments = [...data] })
+                    // const newAppointment = { ...appointment.appointment, appointmentId: uuid.v4() };
+                    // const updatedAppointments = [...appointments, newAppointment];
+                    // appointments = appointments.filter(appointment => appointment.appointmentId !== updatedAppointment.appointmentId);
+                    const updatedAppointments = [
+                        ...appointments.filter(appointment => appointment.appointmentId !== updatedAppointment.appointmentId),
+                        updatedAppointment
+                    ];
+                    const appointmentsJSON = { data: updatedAppointments };
+                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON));
                 } catch (e) {
-                    // read error
-                    console.log(e)
+                    console.log(e);
                 }
-
-                console.log('Done. for set updae')
-
             }
         });
     };
@@ -131,7 +136,7 @@ export const deleteAppointment = appointmentId => {
     return async (dispatch, getState) => {
         dispatch(deleteAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
-            if (state.isInternetReachable) {
+            if (!state.isInternetReachable) {
                 const googleId = getState().data.user.googleId;
                 await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId + '/' + appointmentId, {
                     method: 'DELETE',
@@ -144,14 +149,18 @@ export const deleteAppointment = appointmentId => {
                     .then(dispatch(deleteAppointmentSuccess()))
                     .catch(error => dispatch(deleteAppointmentFailure(error.message)));
             } else {
-                // delete from local storage
                 try {
-                    await AsyncStorage.removeItem(appointmentId)
-                } catch (e) {
-                    console.log(e)
-                }
+                    let appointments = [];
+                    await AsyncStorage.getItem('timeflexAppointments')
+                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
+                        .then(data => { if (data) appointments = [...data] })
 
-                console.log('Done.')
+                    const updatedAppointments = appointments.filter(appointment => appointment.appointmentId !== appointmentId);
+                    const appointmentsJSON = { data: updatedAppointments };
+                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON));
+                } catch (error) {
+                    console.log(error)
+                }
             }
         });
     };
