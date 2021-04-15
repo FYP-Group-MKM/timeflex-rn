@@ -119,7 +119,6 @@ export const updateAppointmentFailure = (error) => ({
 
 export const updateAppointment = updatedAppointment => {
     return async (dispatch, getState) => {
-        console.log(updatedAppointment.appointmentId)
         dispatch(updateAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
