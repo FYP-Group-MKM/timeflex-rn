@@ -1,44 +1,83 @@
 import format from 'date-fns/format';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, SafeAreaView } from 'react-native';
 import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
+
 import { connect } from 'react-redux';
-import { setCurrentDate } from '../actions';
+import { setCurrentDate, fetchAppointments, fetchAppointmentsSuccess, fetchAppointmentsRequest } from '../actions';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
+import EditEventForm from './Forms/EditEventForm'
+
+import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
     const smartPlanningFormRef = React.useRef(null);
+    const eventFormRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
+    const [eventPressed, setEvent] = useState({});
     const dateString = format(props.currentDate, 'MMM yyyy');
 
+    useEffect(() => {
+        props.fetchAppointments();
+    }, []);
+
     const translatedAppointments = props.appointments.map(appointment => {
-        return {
+        const translatedAppointment = {
             ...appointment,
             start: appointment.startDate,
-            end: appointment.endDate,
-        };
+            end: appointment.endDate
+        }
+        delete translatedAppointment.startDate;
+        delete translatedAppointment.endDate;
+        return translatedAppointment;
     });
+
+    const handleMenuButtonPress = () => {
+        props.navigation.toggleDrawer();
+        fetchAppointments();
+    };
+
+    const handleTodayButtonPress = () => {
+        props.setCurrentDate(new Date());
+        props.fetchAppointments();
+    };
+
+    const logout = async () => {
+        try {
+            props.fetchAppointments();
+            await AsyncStorage.removeItem('timeflexUser');
+            console.log('removed user from async storage');
+        } catch (e) {
+            // remove error
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <PaperAppbar.Header style={styles.appbar}>
-                <PaperAppbar.Action icon={'menu'} onPress={props.navigation.toggleDrawer} />
+                <PaperAppbar.Action icon={'menu'} onPress={handleMenuButtonPress} />
                 <PaperAppbar.Content title={dateString} />
-                <PaperAppbar.Action icon={'calendar-today'} onPress={() => props.setCurrentDate(new Date())} />
+                <PaperAppbar.Action icon={'calendar-today'} onPress={handleTodayButtonPress} />
             </PaperAppbar.Header >
             <Calendar
                 events={translatedAppointments}
                 date={props.currentDate}
                 mode={props.mode}
                 height={1}
+                onPressEvent={(event) => {
+                    setEvent(event);
+                    eventFormRef.current.snapTo(0);
+                }}
             />
             <Portal>
-                <SimpleEventForm sheetRef={simpleEventFormRef} />
+                <SimpleEventForm sheetRef={simpleEventFormRef} today={() => props.setCurrentDate(new Date())} />
                 <SmartPlanningForm sheetRef={smartPlanningFormRef} />
+                <EditEventForm sheetRef={eventFormRef} appointment={eventPressed} setEvent={setEvent} />
                 <FAB.Group
                     open={fabOpen}
                     icon={fabOpen ? 'close' : 'plus'}
@@ -87,9 +126,9 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         shadowColor: '#333333',
         shadowOffset: { width: -1, height: -5 },
-        shadowRadius: 3,
-        shadowOpacity: 0.2,
-        paddingTop: 20,
+        shadowRadius: 1,
+        shadowOpacity: 0.1,
+        paddingTop: 15,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
     },
@@ -121,10 +160,14 @@ const styles = StyleSheet.create({
 const mapStateToProps = (state) => ({
     currentDate: state.calendar.currentDate,
     appointments: state.data.appointments,
+    user: state.data.user,
 });
 
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
+    fetchAppointments: () => dispatch(fetchAppointments()),
+    fetchAppointmentsSuccess: (appointments) => dispatch(fetchAppointmentsSuccess(appointments)),
+    fetchAppointmentsRequest: () => dispatch(fetchAppointmentsRequest()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

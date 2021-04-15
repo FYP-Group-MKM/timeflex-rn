@@ -1,33 +1,37 @@
-import addHours from 'date-fns/addHours';
-import setMinutes from 'date-fns/setMinutes';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { TextInput, Button, Switch, Snackbar, Headline, Subheading, ActivityIndicator } from 'react-native-paper';
-import BottomSheet from 'reanimated-bottom-sheet';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
-
 import { connect } from 'react-redux';
-import { postAppointment, fetchAppointments } from '../../actions';
+import { updateAppointment, deleteAppointment, fetchAppointments } from '../../actions';
 
-const SimpleEventForm = (props) => {
-    const [appointment, setAppointment] = useState({
-        title: '',
-        startDate: setMinutes(addHours(new Date(), 1), 0),
-        endDate: setMinutes(addHours(new Date(), 2), 0),
-        allDay: false,
-        description: ''
-    });
+
+const EditEventForm = (props) => {
+    const [appointment, setAppointment] = useState({})
     const [validity, setValidity] = useState({});
     const [snackbarVisible, setSnackbarVisible] = useState(false);
     const [invalidDateMsg, setInvalidDateMsg] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const handleTitleInput = (text) => setAppointment({ ...appointment, title: text });
     const handleDescriptionInput = (text) => setAppointment({ ...appointment, description: text });
     const handleAllDaySwitchToggle = () => setAppointment({ ...appointment, allDay: !appointment.allDay });
     const handleStartDateInput = (date) => setAppointment({ ...appointment, startDate: date });
     const handlEendDateInput = (date) => setAppointment({ ...appointment, endDate: date });
+
+    useEffect(() => {
+        const formattedAppointment = {
+            ...props.appointment,
+            startDate: props.appointment.start ? new Date(props.appointment.start) : new Date(),
+            endDate: props.appointment.end ? new Date(props.appointment.end) : new Date()
+        };
+        delete formattedAppointment.start;
+        delete formattedAppointment.end;
+        setAppointment(formattedAppointment);
+        setLoading(false);
+    }, [props.appointment.appointmentId]);
 
     const renderHeader = () => (
         <View style={styles.header}>
@@ -40,10 +44,16 @@ const SimpleEventForm = (props) => {
     const handleSubmit = async () => {
         if (!appointmentIsValid()) return;
         setLoading(true);
-        await props.postAppointment({
-            type: 'simple',
-            appointment: { ...appointment, googleId: props.user.googleId }
-        });
+        await props.updateAppointment(appointment)
+        setTimeout(() => props.fetchAppointments()
+            .then(resetAppointment())
+            .then(props.sheetRef.current.snapTo(1))
+            .then(setLoading(false)), 25);
+    };
+
+    const handleDelete = async () => {
+        setLoading(true);
+        await props.deleteAppointment(appointment.appointmentId);
         setTimeout(() => props.fetchAppointments()
             .then(resetAppointment())
             .then(props.sheetRef.current.snapTo(1))
@@ -51,15 +61,14 @@ const SimpleEventForm = (props) => {
     };
 
     const resetAppointment = () => {
-        setAppointment({
-            title: '',
-            startDate: setMinutes(addHours(new Date(), 1), 0),
-            endDate: setMinutes(addHours(new Date(), 2), 0),
-            allDay: false,
-            description: ''
-        });
+        const formattedAppointment = {};
+        delete formattedAppointment.start;
+        delete formattedAppointment.end;
+        setAppointment(formattedAppointment);
+        props.setEvent({});
+        props.sheetRef.current.snapTo(1);
         resetSnackbar();
-    }
+    };
 
     const resetSnackbar = () => {
         setSnackbarVisible(false);
@@ -101,44 +110,42 @@ const SimpleEventForm = (props) => {
         return isValid;
     };
 
+
     return (
         <BottomSheet
             ref={props.sheetRef}
             initialSnap={1}
             snapPoints={['95%', 0]}
-            onCloseStart={Keyboard.dismiss}
             onCloseEnd={resetAppointment}
             renderHeader={renderHeader}
             renderContent={() => !loading ? (
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
                     <KeyboardAwareScrollView style={styles.root}>
                         <View style={styles.formTitle}>
-                            <Headline>Simple Event</Headline>
-                            <Button onPress={handleSubmit}>Create</Button>
+                            <Headline>Edit Event</Headline>
+                            <View style={styles.options}>
+                                <Button onPress={handleSubmit}>Save</Button>
+                                <Button onPress={handleDelete}>Delete</Button>
+                            </View>
                         </View>
                         <TextInput
                             mode='outlined'
                             dense
-                            label="Title"
+                            label='Title'
                             value={appointment.title}
                             style={styles.eventTitle}
                             error={validity.titleIsEmpty}
                             onChangeText={handleTitleInput}
                         />
-                        <View>
-                            <View style={styles.switch}>
-                                <Switch value={appointment.allDay} onValueChange={handleAllDaySwitchToggle} />
-                                <Subheading>All Day</Subheading>
-                            </View>
-                            <View style={styles.datePickerRow}>
-                                <Subheading>From</Subheading>
+                        {appointment.startDate && appointment.endDate ?
+                            <View>
+                                <View style={styles.switch}>
+                                    <Switch value={appointment.allDay} onValueChange={handleAllDaySwitchToggle} />
+                                    <Subheading>All Day</Subheading>
+                                </View>
                                 <ButtonDateTimePicker date={appointment.startDate} handleDateSelect={handleStartDateInput} />
-                            </View>
-                            <View style={styles.datePickerRow}>
-                                <Subheading>Until</Subheading>
                                 <ButtonDateTimePicker date={appointment.endDate} handleDateSelect={handlEendDateInput} />
-                            </View>
-                        </View>
+                            </View> : null}
                         <TextInput
                             mode='outlined'
                             label="Description"
@@ -148,12 +155,10 @@ const SimpleEventForm = (props) => {
                             style={styles.description}
                             onChangeText={handleDescriptionInput}
                         />
-
                         <View style={styles.dummy} />
-
                         <Snackbar
                             visible={snackbarVisible}
-                            onDismiss={resetSnackbar}
+                            onDismiss={() => setSnackbarVisible(false)}
                             style={styles.snackbar}
                         >
                             {invalidDateMsg}
@@ -174,6 +179,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    options: {
+        display: 'flex',
+        flexDirection: 'row'
     },
     root: {
         backgroundColor: 'white',
@@ -238,13 +247,17 @@ const styles = StyleSheet.create({
     // }
 });
 
-const mapStateToProps = state => ({
-    user: state.data.user,
+
+const mapStateToProps = (state) => ({
+    currentDate: state.calendar.currentDate,
+    appointments: state.data.appointments,
 });
 
-const mapDispatchToProps = dispatch => ({
-    postAppointment: (appointment) => dispatch(postAppointment(appointment)),
-    fetchAppointments: () => dispatch(fetchAppointments())
+const mapDispatchToProps = (dispatch) => ({
+    setCurrentDate: (date) => dispatch(setCurrentDate(date)),
+    updateAppointment: appointment => dispatch(updateAppointment(appointment)),
+    deleteAppointment: appointmentId => dispatch(deleteAppointment(appointmentId)),
+    fetchAppointments: () => dispatch(fetchAppointments()),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(SimpleEventForm);
+export default connect(mapStateToProps, mapDispatchToProps)(EditEventForm);

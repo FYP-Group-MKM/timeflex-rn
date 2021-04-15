@@ -17,8 +17,8 @@ const ButtonDateTimePicker = (props) => {
 
     return (
         <View style={styles.root}>
-            <Button onPress={() => setDatePickerOpen(true)}>{format(props.date, 'eeee, dd/M/yyyy')}</Button>
-            <Button onPress={() => setTimePickerOpen(true)}>{format(props.date, 'p')}</Button>
+            <Button onPress={() => setDatePickerOpen(true)}>{format(props.date, 'eee, dd/M/yyyy')}</Button>
+            <Button onPress={() => setTimePickerOpen(true)}>{((props.date.getHours() < 10) && (props.date.getHours() > 0) ? '0' : '') + format(props.date, 'p')}</Button>
             <DateTimePickerModal
                 isVisible={datePickerOpen}
                 mode='date'
