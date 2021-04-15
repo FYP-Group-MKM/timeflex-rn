@@ -47,7 +47,6 @@ const SimpleEventForm = (props) => {
         })
             .then(props.fetchAppointments()
                 .then(() => {
-                    console.log('fetched appointments')
                     resetAppointment();
                     props.sheetRef.current.snapTo(1);
                     setLoading(false);
@@ -96,7 +95,6 @@ const SimpleEventForm = (props) => {
         setValidity(newValidity);
         return isValid;
     };
-
 
     return (
         <BottomSheet
@@ -228,7 +226,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     postAppointment: (appointment) => dispatch(postAppointment(appointment)),
-    // fetchAppointments: () => dispatch(fetchAppointments())
+    fetchAppointments: () => dispatch(fetchAppointments())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SimpleEventForm);

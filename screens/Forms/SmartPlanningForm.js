@@ -75,7 +75,7 @@ const SmartPlanningForm = (props) => {
                     setSnackbarVisible(true);
                 }
                 else props.fetchAppointments()
-                    .then(res => {
+                    .then(() => {
                         props.sheetRef.current.snapTo(1);
                         resetAppointment();
                     });
@@ -305,7 +305,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     postAppointment: (appointment) => dispatch(postAppointment(appointment)),
-    // fetchAppointments: () => dispatch(fetchAppointments())
+    fetchAppointments: () => dispatch(fetchAppointments())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SmartPlanningForm);

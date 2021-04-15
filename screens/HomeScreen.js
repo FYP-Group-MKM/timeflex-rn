@@ -27,31 +27,29 @@ const HomeScreen = (props) => {
 
     useEffect(() => {
         // let isMounted = true;
-        fetchAppointments();
+        props.fetchAppointments();
         // return () => isMounted = false;
 
     }, []);
 
-    const checkInternetReachable = async () => await NetInfo.fetch().then(state => state.isInternetReachable);
+    // const checkInternetReachable = async () => await NetInfo.fetch().then(state => state.isInternetReachable);
 
-    const fetchAppointments = async () => {
-        console.log('buggy shit')
-        if (checkInternetReachable()) {
-            props.fetchAppointmentsRequest();
-            fetch('https://timeflex-web.herokuapp.com/appointments/' + props.user.googleId)
-                .then(res => res.json())
-                // .then(res => props.fetchAppointmentsSuccess(res))
-                // .then(res => setAppointments(res))
-                .catch(error => console.log(error))
-        } else {
-            // await AsyncStorage.removeItem('timeflexAppointments');
-            await AsyncStorage.getItem('timeflexAppointments')
-                .then(appointmentsJSON => {
-                    if (appointmentsJSON) setAppointments(JSON.parse(appointmentsJSON).data)
-                    // console.log(appointments)
-                });
-        }
-    };
+    // const fetchAppointments = async () => {
+    //     console.log('buggy shit')
+    //     if (checkInternetReachable()) {
+    //         props.fetchAppointmentsRequest();
+    //         fetch('https://timeflex-web.herokuapp.com/appointments/' + props.user.googleId)
+    //             .then(res => res.json())
+    //             .then(res => props.fetchAppointmentsSuccess(res))
+    //             // .then(res => setAppointments(res))
+    //             .catch(error => console.log(error))
+    //     } else {
+    //         // await AsyncStorage.getItem('timeflexAppointments')
+    //         //     .then(appointmentsJSON => {
+    //         //         if (appointmentsJSON) setAppointments(JSON.parse(appointmentsJSON).data)
+    //         //     });
+    //     }
+    // };
 
     const translatedAppointments = props.appointments.map(appointment => {
         const translatedAppointment = {
@@ -102,9 +100,9 @@ const HomeScreen = (props) => {
                 }}
             />
             <Portal>
-                <SimpleEventForm sheetRef={simpleEventFormRef} fetchAppointments={fetchAppointments} today={() => props.setCurrentDate(new Date())} />
-                <SmartPlanningForm sheetRef={smartPlanningFormRef} fetchAppointments={fetchAppointments} />
-                <EditEventForm sheetRef={eventFormRef} appointment={eventPressed} fetchAppointments={fetchAppointments} />
+                <SimpleEventForm sheetRef={simpleEventFormRef} today={() => props.setCurrentDate(new Date())} />
+                <SmartPlanningForm sheetRef={smartPlanningFormRef} />
+                <EditEventForm sheetRef={eventFormRef} appointment={eventPressed} />
                 <FAB.Group
                     open={fabOpen}
                     icon={fabOpen ? 'close' : 'plus'}

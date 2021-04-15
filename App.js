@@ -6,7 +6,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { connect } from 'react-redux';
-import { fetchAppointments, setUser, setCurrentDate } from './actions';
+import { fetchAppointments, setUser } from './actions';
 
 import * as Linking from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser';
@@ -57,31 +57,23 @@ const App = (props) => {
     });
 
 
-    return (
+    return props.user.googleId ?
         <NavigationContainer >
             <ExpoStatusBar style='auto' />
-            {
-                (props.user.googleId) ?
-                    <Drawer.Navigator>
-                        {routes}
-                    </Drawer.Navigator>
-                    : <SafeAreaView>
-                        <Button title='login' onPress={handleOAuthLogin}>Login</Button>
-                    </SafeAreaView >
-            }
+            <Drawer.Navigator>
+                {routes}
+            </Drawer.Navigator>
         </NavigationContainer>
-    );
+        : <SafeAreaView>
+            <Button title='login' onPress={handleOAuthLogin}>Login</Button>
+        </SafeAreaView >;
 };
 
 const mapStateToProps = (state) => ({
-    currentDate: state.calendar.currentDate,
     user: state.data.user,
-    appointments: state.data.appointments,
-    loading: state.data.loading,
 });
 
 const mapDispatchToProps = (dispatch) => ({
-    setCurrentDate: (date) => dispatch(setCurrentDate(date)),
     setUser: (user) => dispatch(setUser(user)),
     fetchAppointments: () => dispatch(fetchAppointments()),
 });

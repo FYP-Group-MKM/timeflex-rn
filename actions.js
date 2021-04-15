@@ -34,17 +34,10 @@ export const fetchAppointments = () => {
                     .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
             } else {
-                try {
-                    let appointments = [];
-                    AsyncStorage.getAllKeys()
-                        .then(keys => keys.map(key => {
-                            AsyncStorage.getItem(key)
-                                .then(appointment => JSON.parse(appointment))
-                                .then(appointment => appointments = [...appointments, appointment])
-                        }));
-                } catch (e) {
-                    console.log(e);
-                }
+                await AsyncStorage.getItem('timeflexAppointments')
+                    .then(appointmentsJSON => { if (appointmentsJSON) setAppointments(JSON.parse(appointmentsJSON).data) })
+                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
+                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
             }
         });
     };
@@ -69,18 +62,17 @@ export const postAppointment = (appointment) => {
                     .catch(error => dispatch(postAppointmentFailure(error.message)));
             } else {
                 if (appointment.type === 'simple') {
-                    try {
-                        let appointments = [];
-                        await AsyncStorage.getItem('timeflexAppointments')
-                            .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
-                            .then(data => { if (data) appointments = [...data] })
-                        const newAppointment = { ...appointment.appointment, appointmentId: uuid.v4() };
-                        const updatedAppointments = [...appointments, newAppointment];
-                        const appointmentsJSON = { data: updatedAppointments };
-                        await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON));
-                    } catch (e) {
-                        console.log(e);
-                    }
+                    let appointments = [];
+                    await AsyncStorage.getItem('timeflexAppointments')
+                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
+                        .then(data => { if (data) appointments = [...data] })
+                        .catch(error => console.log(error))
+                    const newAppointment = { ...appointment.appointment, appointmentId: uuid.v4() };
+                    const updatedAppointments = [...appointments, newAppointment];
+                    const appointmentsJSON = { data: updatedAppointments };
+                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
+                        .then(dispatch(postAppointmentSuccess()))
+                        .catch(error => dispatch(postAppointmentFailure(error.message)));
                 }
 
                 if (appointment.type === 'smart') {
@@ -120,7 +112,9 @@ export const updateAppointment = updatedAppointment => {
                         updatedAppointment
                     ];
                     const appointmentsJSON = { data: updatedAppointments };
-                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON));
+                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
+                        .then(dispatch(updateAppointmentSuccess()))
+                        .catch(error => dispatch(updateAppointmentFailure(error.message)));
                 } catch (e) {
                     console.log(e);
                 }
@@ -154,7 +148,9 @@ export const deleteAppointment = appointmentId => {
 
                     const updatedAppointments = appointments.filter(appointment => appointment.appointmentId !== appointmentId);
                     const appointmentsJSON = { data: updatedAppointments };
-                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON));
+                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
+                        .then(dispatch(deleteAppointmentSuccess()))
+                        .catch(error => dispatch(deleteAppointmentFailure(error.message)));
                 } catch (error) {
                     console.log(error)
                 }
