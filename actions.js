@@ -28,19 +28,13 @@ export const fetchAppointments = () => {
         dispatch(fetchAppointmentsRequest());
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
-                // console.log('Online Mode')
-                // const googleId = getState().data.user.googleId;
-                // await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
-                //     .then(res => res.json())
-                //     .then(data => dispatch(fetchAppointmentsSuccess(data)))
-                //     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-                console.log('loadLocalAppointment')
-                const mainStorageJSON = await AsyncStorage.getItem('timeflexAppointments')
-                const mainStorageObject = JSON.parse(mainStorageJSON)
-                const tooAddJSON = await AsyncStorage.getItem('timeflexAppointmemntsToPost')
-                const tooAddObject = JSON.parse(tooAddJSON)
-            
-                console.log("here is the main",mainStorageObject.data)
+                console.log('Online Mode')
+                const googleId = getState().data.user.googleId;
+                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+                    .then(res => res.json())
+                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
+                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+               
     // .then(appointmentsJSON => { return JSON.parse(appointmentsJSON).data })
     // .then(data => dispatch(fetchAppointmentsSuccess(data)))
     // .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
