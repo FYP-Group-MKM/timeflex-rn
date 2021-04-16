@@ -35,7 +35,7 @@ export const fetchAppointments = () => {
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
             } else {
                 await AsyncStorage.getItem('timeflexAppointments')
-                    .then(appointmentsJSON => { if (appointmentsJSON) setAppointments(JSON.parse(appointmentsJSON).data) })
+                    .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON).data : [])
                     .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
             }
