@@ -77,8 +77,8 @@ export const loadLocalAppointment = () => {
     const tooAddJSON = await AsyncStorage.getItem('timeflexAppointmemntsToPost')
     const tooAddArray = JSON.parse(tooAddJSON).data
     const data = [...mainStorageArray,...tooAddArray]
-    .then(data => dispatch(fetchAppointmentsSuccess(data)))
-    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+    dispatch(fetchAppointmentsSuccess(data)))
+    
 
     }
     
