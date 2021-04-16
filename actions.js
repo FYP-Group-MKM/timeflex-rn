@@ -28,16 +28,34 @@ export const fetchAppointments = () => {
         dispatch(fetchAppointmentsRequest());
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
+                console.log('Online Mode')
                 const googleId = getState().data.user.googleId;
                 await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
                     .then(res => res.json())
                     .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+                
+                
+                
+                    // console.log('Offline Test Mode')
+                // const appointmentsJSON = await AsyncStorage.getItem('timeflexAppointments')
+                // const data = JSON.parse(appointmentsJSON).data
+                // dispatch(fetchAppointmentsSuccess(data))
+                // console.log(getState().data.appointments)
+                
+                
             } else {
+                console.log('Offline Mode')
                 await AsyncStorage.getItem('timeflexAppointments')
-                    .then(appointmentsJSON => { if (appointmentsJSON) setAppointments(JSON.parse(appointmentsJSON).data) })
+                    .then(appointmentsJSON => { return JSON.parse(appointmentsJSON).data })
                     .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+                
+                // console.log('Offline Mode')
+                // const appointmentsJSON = await AsyncStorage.getItem('timeflexAppointments')
+                // const data = JSON.parse(appointmentsJSON).data
+                // // dispatch(fetchAppointmentsSuccess(data))
+                // console.log(getState().data.appointments)
             }
         });
     };
@@ -48,6 +66,7 @@ export const postAppointment = (appointment) => {
         dispatch(postAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
+                console.log('online mode')
                 await fetch('https://timeflex-web.herokuapp.com/appointments', {
                     method: 'POST',
                     headers: {
@@ -60,6 +79,7 @@ export const postAppointment = (appointment) => {
                     .then(dispatch(postAppointmentSuccess()))
                     .catch(error => dispatch(postAppointmentFailure(error.message)));
             } else {
+                console.log('offline mode')
                 if (appointment.type === 'simple') {
                     let appointments = [];
                     await AsyncStorage.getItem('timeflexAppointments')
