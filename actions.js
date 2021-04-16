@@ -28,20 +28,29 @@ export const fetchAppointments = () => {
         dispatch(fetchAppointmentsRequest());
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
-                console.log('Online Mode')
-                const googleId = getState().data.user.googleId;
-                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
-                    .then(res => res.json())
-                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
-                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+                // console.log('Online Mode')
+                // const googleId = getState().data.user.googleId;
+                // await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+                //     .then(res => res.json())
+                //     .then(data => dispatch(fetchAppointmentsSuccess(data)))
+                //     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+                console.log('loadLocalAppointment')
+                const mainStorageJSON = await AsyncStorage.getItem('timeflexAppointments')
+                const mainStorageObject = JSON.parse(mainStorageJSON)
+                const tooAddJSON = await AsyncStorage.getItem('timeflexAppointmemntsToPost')
+                const tooAddObject = JSON.parse(tooAddJSON)
+            
+                console.log("here is the main",mainStorageObject.data)
+    // .then(appointmentsJSON => { return JSON.parse(appointmentsJSON).data })
+    // .then(data => dispatch(fetchAppointmentsSuccess(data)))
+    // .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
                 
                 
-                
-                    // console.log('Offline Test Mode')
+                //     console.log('Offline Test Mode')
                 // const appointmentsJSON = await AsyncStorage.getItem('timeflexAppointments')
                 // const data = JSON.parse(appointmentsJSON).data
                 // dispatch(fetchAppointmentsSuccess(data))
-                // console.log(getState().data.appointments)
+                // console.log(appointmentsJSON)
                 
                 
             } else {
@@ -60,7 +69,21 @@ export const fetchAppointments = () => {
         });
     };
 };
+export const loadLocalAppointment = () => {
+    return async (dispatch, getState) => {
+        console.log('loadLocalAppointment')
+    const mainStorageJSON = await AsyncStorage.getItem('timeflexAppointments')
+    const mainStorageArray = JSON.parse(mainStorageJSON).data
+    const tooAddJSON = await AsyncStorage.getItem('timeflexAppointmemntsToPost')
+    const tooAddArray = JSON.parse(tooAddJSON).data
+    const data = [...mainStorageArray,...tooAddArray]
+    .then(data => dispatch(fetchAppointmentsSuccess(data)))
+    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
 
+    }
+    
+    
+}
 export const postAppointment = (appointment) => {
     return async (dispatch) => {
         dispatch(postAppointmentRequest());
@@ -79,6 +102,7 @@ export const postAppointment = (appointment) => {
                     .then(dispatch(postAppointmentSuccess()))
                     .catch(error => dispatch(postAppointmentFailure(error.message)));
             } else {
+                // add into the to add
                 console.log('offline mode')
                 if (appointment.type === 'simple') {
                     let appointments = [];
