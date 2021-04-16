@@ -34,23 +34,23 @@ export const fetchAppointments = () => {
                     .then(res => res.json())
                     .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-                
-                
-                
-                    // console.log('Offline Test Mode')
+
+
+
+                // console.log('Offline Test Mode')
                 // const appointmentsJSON = await AsyncStorage.getItem('timeflexAppointments')
                 // const data = JSON.parse(appointmentsJSON).data
                 // dispatch(fetchAppointmentsSuccess(data))
                 // console.log(getState().data.appointments)
-                
-                
+
+
             } else {
                 console.log('Offline Mode')
                 await AsyncStorage.getItem('timeflexAppointments')
                     .then(appointmentsJSON => { return JSON.parse(appointmentsJSON).data })
                     .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-                
+
                 // console.log('Offline Mode')
                 // const appointmentsJSON = await AsyncStorage.getItem('timeflexAppointments')
                 // const data = JSON.parse(appointmentsJSON).data
@@ -62,11 +62,16 @@ export const fetchAppointments = () => {
 };
 
 export const postAppointment = (appointment) => {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
         dispatch(postAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
+            const googleId = getState().data.user.googleId;
+            const newAppointment = { ...appointment, appointmentId: uuid.v4(), googleId: googleId };
+            let storageKey = 'timeflexAppointmentsToPost';
+
             if (state.isInternetReachable) {
-                console.log('online mode')
+                storageKey = 'timeflexAppointments';
+
                 await fetch('https://timeflex-web.herokuapp.com/appointments', {
                     method: 'POST',
                     headers: {
@@ -78,26 +83,18 @@ export const postAppointment = (appointment) => {
                 })
                     .then(dispatch(postAppointmentSuccess()))
                     .catch(error => dispatch(postAppointmentFailure(error.message)));
-            } else {
-                console.log('offline mode')
-                if (appointment.type === 'simple') {
-                    let appointments = [];
-                    await AsyncStorage.getItem('timeflexAppointments')
-                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
-                        .then(data => { if (data) appointments = [...data] })
-                        .catch(error => console.log(error))
-                    const newAppointment = { ...appointment.appointment, appointmentId: uuid.v4() };
-                    const updatedAppointments = [...appointments, newAppointment];
-                    const appointmentsJSON = { data: updatedAppointments };
-                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
-                        .then(dispatch(postAppointmentSuccess()))
-                        .catch(error => dispatch(postAppointmentFailure(error.message)));
-                }
-
-                if (appointment.type === 'smart') {
-
-                }
             }
+
+            const appointments = await AsyncStorage.getItem(storageKey)
+                .then(appointmentsJSON => JSON.parse(appointmentsJSON))
+                .then(obj => obj.data ? obj.data : [])
+                .catch(error => console.log(error));
+
+            const updatedAppointments = [...appointments, newAppointment];
+            const appointmentsJSON = { data: updatedAppointments };
+            await AsyncStorage.setItem(storageKey, JSON.stringify(appointmentsJSON))
+                .then(dispatch(postAppointmentSuccess()))
+                .catch(error => dispatch(postAppointmentFailure(error.message)));
         });
     };
 };
