@@ -6,7 +6,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { connect } from 'react-redux';
-import { fetchAppointments, setUser } from './actions';
+import { fetchAppointments,fetchAppointmentsSuccess, setUser } from './actions';
 
 import HomeScreen from './screens/HomeScreen';
 import LogoutScreen from './screens/LogoutScreen';
@@ -16,6 +16,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { not } from 'react-native-reanimated';
 
 const Drawer = createDrawerNavigator();
+
+const loadLocalAppointments = async () => {
+    const mainStorageJSON = await AsyncStorage.getItem('timeflexAppointments')
+    const mainStorageArray = JSON.parse(mainStorageJSON).data
+    const tooAddJSON = await AsyncStorage.getItem('timeflexAppointmemntsToPost')
+    const tooAddArray = JSON.parse(tooAddJSON).data
+    const data = [...mainStorageArray,...tooAddArray]
+    console.log('Here is the data from the loadcalAppointements',data)
+    return data
+}
 
 //onlineAppointments is an array retrive from fetch 
 //loxal appointmentss is an array retrive from local storage
@@ -100,6 +110,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
     setUser: (user) => dispatch(setUser(user)),
     fetchAppointments: () => dispatch(fetchAppointments()),
+    changeUI:(data) => dispatch(fetchAppointmentsSuccess(data))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

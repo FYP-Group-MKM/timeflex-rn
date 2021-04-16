@@ -32,19 +32,9 @@ export const fetchAppointments = () => {
                 const googleId = getState().data.user.googleId;
                 await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
                     .then(res => res.json())
-                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
-                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+                    // .then(data => dispatch(fetchAppointmentsSuccess(data)))
+                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));           
                
-    // .then(appointmentsJSON => { return JSON.parse(appointmentsJSON).data })
-    // .then(data => dispatch(fetchAppointmentsSuccess(data)))
-    // .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-                
-                
-                //     console.log('Offline Test Mode')
-                // const appointmentsJSON = await AsyncStorage.getItem('timeflexAppointments')
-                // const data = JSON.parse(appointmentsJSON).data
-                // dispatch(fetchAppointmentsSuccess(data))
-                // console.log(appointmentsJSON)
                 
                 
             } else {
@@ -54,30 +44,35 @@ export const fetchAppointments = () => {
                     .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
                 
-                // console.log('Offline Mode')
-                // const appointmentsJSON = await AsyncStorage.getItem('timeflexAppointments')
-                // const data = JSON.parse(appointmentsJSON).data
-                // // dispatch(fetchAppointmentsSuccess(data))
-                // console.log(getState().data.appointments)
             }
         });
     };
 };
-export const loadLocalAppointment = () => {
+//It might  be the gobal function of the load the Toadd and timeflex mainstorage
+// export const loadLocalAppointments = () => {
+//     return async (dispatch, getState) => {
+//     console.log('loadLocalAppointment')
+//     const mainStorageJSON = await AsyncStorage.getItem('timeflexAppointments')
+//     const mainStorageArray = JSON.parse(mainStorageJSON).data
+//     const tooAddJSON = await AsyncStorage.getItem('timeflexAppointmemntsToPost')
+//     const tooAddArray = JSON.parse(tooAddJSON).data
+//     const data = [...mainStorageArray,...tooAddArray]
+//     dispatch(fetchAppointmentsSuccess(data))
+    
+// }
+// }
+export const fetchCloudAppointments = async () => {
     return async (dispatch, getState) => {
-        console.log('loadLocalAppointment')
-    const mainStorageJSON = await AsyncStorage.getItem('timeflexAppointments')
-    const mainStorageArray = JSON.parse(mainStorageJSON).data
-    const tooAddJSON = await AsyncStorage.getItem('timeflexAppointmemntsToPost')
-    const tooAddArray = JSON.parse(tooAddJSON).data
-    const data = [...mainStorageArray,...tooAddArray]
-    dispatch(fetchAppointmentsSuccess(data))
-    
-
+        dispatch(fetchAppointmentsRequest());
+        const googleId = getState().data.user.googleId;
+                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+                    .then(res => res.json())
+                    // .then(data => dispatch(fetchAppointmentsSuccess(data)))
+                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));   
     }
-    
-    
 }
+        
+
 export const postAppointment = (appointment) => {
     return async (dispatch) => {
         dispatch(postAppointmentRequest());
@@ -96,18 +91,26 @@ export const postAppointment = (appointment) => {
                     .then(dispatch(postAppointmentSuccess()))
                     .catch(error => dispatch(postAppointmentFailure(error.message)));
             } else {
-                // add into the to add
+                // add into the to add storage
                 console.log('offline mode')
                 if (appointment.type === 'simple') {
-                    let appointments = [];
+                    let appointments = [];//the appointment may have to update to the redux store
+                    let topost = []; //it is the appointment that will add into the TopostStorage
                     await AsyncStorage.getItem('timeflexAppointments')
                         .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
                         .then(data => { if (data) appointments = [...data] })
                         .catch(error => console.log(error))
+
+                    await AsyncStorage.getItem('timeflexAppointmentsToPost')
+                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
+                        .then(data => { if (data) topost = [...data] })
+                        .catch(error => console.log(error))
+                    
                     const newAppointment = { ...appointment.appointment, appointmentId: uuid.v4() };
-                    const updatedAppointments = [...appointments, newAppointment];
+                    const reduxUpdate  =  [...appointment,...topost, newAppointment]
+                    const updatedAppointments = [...topost, newAppointment];
                     const appointmentsJSON = { data: updatedAppointments };
-                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
+                    await AsyncStorage.setItem('timeflexAppointmemntsToPost', JSON.stringify(appointmentsJSON))
                         .then(dispatch(postAppointmentSuccess()))
                         .catch(error => dispatch(postAppointmentFailure(error.message)));
                 }
@@ -179,13 +182,19 @@ export const deleteAppointment = appointmentId => {
             } else {
                 try {
                     let appointments = [];
+                    let todelete = [];
                     await AsyncStorage.getItem('timeflexAppointments')
                         .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
                         .then(data => { if (data) appointments = [...data] })
-
+                    
+                    await AsyncStorage.getItem('timeflexAppointmentsToDelete')
+                    .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
+                    .then(data => { if (data) todelete = [...data] })
+                    //Redux
                     const updatedAppointments = appointments.filter(appointment => appointment.appointmentId !== appointmentId);
-                    const appointmentsJSON = { data: updatedAppointments };
-                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
+                    todelete = appointments.map(appointment => appointment.appointmentId === appointmentId);
+                    // const appointmentsJSON = { data: updatedAppointments };
+                    await AsyncStorage.setItem('timeflexAppointmentsToDelete', JSON.stringify(todelete))
                         .then(dispatch(deleteAppointmentSuccess()))
                         .catch(error => dispatch(deleteAppointmentFailure(error.message)));
                 } catch (error) {
