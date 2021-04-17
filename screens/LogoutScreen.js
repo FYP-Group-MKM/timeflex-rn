@@ -15,7 +15,6 @@ const LogoutScreen = (props) => {
 
     const clearAppData = async () => {
         await AsyncStorage.removeItem('timeflexUser');
-        await AsyncStorage.removeItem('timeflexAppointments');
     }
 
     return (

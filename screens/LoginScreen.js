@@ -8,8 +8,6 @@ import { fetchAppointments, setUser } from '../actions';
 import * as Linking from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import logo from '../assets/HKU.jpg'
-import { useAssets } from 'expo-asset';
 
 const LoginScreen = (props) => {
 

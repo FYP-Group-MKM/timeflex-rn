@@ -243,7 +243,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
     postAppointment: (appointment) => dispatch(postAppointment(appointment)),
     fetchAppointments: () => dispatch(fetchAppointments()),
-    loadLocalAppointments: dispatch(loadLocalAppointments()),
+    loadLocalAppointments: () => dispatch(loadLocalAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SimpleEventForm);
