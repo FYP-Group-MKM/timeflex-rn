@@ -27,7 +27,7 @@ export const syncAppointments = () => {
     return async (dispatch, getState) => {
         const googleId = getState().data.user.googleId;
 
-        await AsyncStorage.getItem('timeflexAppointmentsToPost')
+        const postUpdate = async () => await AsyncStorage.getItem('timeflexAppointmentsToPost')
             .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
             .then(obj => obj.data ? obj.data : [])
             .then(appointmentsToPost => {
@@ -46,13 +46,14 @@ export const syncAppointments = () => {
                         credentials: 'include',
                     })
                         .then(dispatch(postAppointmentSuccess()))
+                        .then(console.log('posted update to server'))
                         .catch(error => dispatch(postAppointmentFailure(error.message)));
                 });
             })
             .then(AsyncStorage.setItem('timeflexAppointmentsToPost', ''))
             .catch(error => console.log(error));
 
-        await AsyncStorage.getItem('timeflexAppointmentsToDelete')
+        const deleteUpdate = async () => await AsyncStorage.getItem('timeflexAppointmentsToDelete')
             .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
             .then(obj => obj.data ? obj.data : [])
             .then(appointmentsToDelete => {
@@ -68,27 +69,34 @@ export const syncAppointments = () => {
                     })
                         .then(deleteAppointmentSuccess())
                         .catch(error => dispatch(deleteAppointmentFailure(error.message)));
-                });
+                })
             })
+            .then(console.log('removed deleted appointments from server'))
             .then(AsyncStorage.setItem('timeflexAppointmentsToDelete', ''))
             .catch(error => console.log(error));
 
-        dispatch(fetchAppointmentsRequest());
-        await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
-            .then(res => res.json())
-            .then(res => ({ data: res }))
-            .then(async (appointmentsObj) => {
-                console.log('inserting the data to local storage...');
-                await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsObj))
-            })
-            .catch(error => console.log(error));
-        console.log('finished synchronization');
+        const fetchUpdate = async () => {
+            dispatch(fetchAppointmentsRequest());
+            await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+                .then(res => res.json())
+                .then(res => ({ data: res }))
+                .then(async (appointmentsObj) => {
+                    dispatch(fetchAppointmentsSuccess(appointmentsObj.data))
+                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsObj))
+                        .then(console.log('updated the local storage'))
+                })
+                .then()
+                .catch(error => dispatch(fetchAppointmentsFailure(error)));
+        };
+
+        await postUpdate()
+            .then(deleteUpdate()
+                .then(fetchUpdate()));
     };
 };
 
 export const loadLocalAppointments = () => {
     return async (dispatch) => {
-        console.log('loading from storage...');
         dispatch(fetchAppointmentsRequest());
         await AsyncStorage.getItem('timeflexAppointments')
             .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
@@ -98,10 +106,9 @@ export const loadLocalAppointments = () => {
                     .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
                     .then(obj => obj.data ? obj.data : [])
                     .then(appointmentsToPost => dispatch(fetchAppointmentsSuccess([...appointments, ...appointmentsToPost])))
+                    .then(() => console.log('loaded data from storage'))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-            })
-            .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-        console.log('finished data loading');
+            });
     };
 };
 

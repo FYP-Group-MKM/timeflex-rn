@@ -19,20 +19,16 @@ const HomeScreen = (props) => {
     const eventFormRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
     const [eventPressed, setEvent] = useState({});
+    const [isInternetReachable, setInternetReachable] = useState(NetInfo.fetch().then(state => state.isInternetReachable));
     const dateString = format(props.currentDate, 'MMM yyyy');
 
     useEffect(() => {
-        NetInfo.fetch().then(async state => {
-            if (state.isInternetReachable) {
-                await props.syncAppointments()
-                    .then(props.loadLocalAppointments());
-            } else {
-                await props.loadLocalAppointments();
-            }
-        })
-    }, []);
-
-    console.log(props.appointments)
+        if (isInternetReachable) {
+            props.syncAppointments()
+        } else {
+            props.loadLocalAppointments();
+        }
+    }, [props.user.googleId]);
 
     const translatedAppointments = props.appointments.map(appointment => {
         const translatedAppointment = {
@@ -83,7 +79,7 @@ const HomeScreen = (props) => {
                         {
                             icon: 'school',
                             label: props.user.username,
-                            onPress: () => { },
+                            onPress: () => props.syncAppointments(),
                         },
                         {
                             icon: 'calendar-search',
