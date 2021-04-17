@@ -37,7 +37,7 @@ const sych = async (googleId) => {
                         .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
                         .then(data => { if (data) toaddArray = [...data] })
     //Add 
-    toaddArray.forEach( (element) => {
+    toaddArray.forEach( async (element) => {
         await fetch('https://timeflex-web.herokuapp.com/appointments', {
         method: 'POST',
         headers: {
@@ -58,7 +58,7 @@ const sych = async (googleId) => {
     .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
     .then(data => { if (data) toDeleteArray = [...data] })
 
-    toDeleteArray.forEach((appointment) => {
+    toDeleteArray.forEach(async (appointment) => {
         await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId + '/' + appointment.appointmentId, {
                     method: 'DELETE',
                     headers: {
@@ -91,7 +91,7 @@ const sych = async (googleId) => {
     const uniqueAppintments = updatedAppointments.filter((item,index) => updatedAppointments.indexOf(item) === index);
     const appointmentsJSON = { data: uniqueAppintments };
     await AsyncStorage.setItem('timeflexAppointmemnts', JSON.stringify(appointmentsJSON))
-
+    console.log("sync sucess")
 } 
 
 const App = (props) => {
@@ -100,7 +100,8 @@ const App = (props) => {
     useEffect(() => {
         AsyncStorage.getItem('timeflexUser')
             .then(user => props.setUser(JSON.parse(user)))
-            .then(props.fetchAppointments());
+            .then(user => sych(user.googleId))
+            .then( () => console.log(props))
     }, []);
 
     const routes = ['week', '3days', 'day'].map(mode => {
