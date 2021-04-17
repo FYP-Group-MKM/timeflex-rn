@@ -3,7 +3,7 @@ import { StyleSheet, SafeAreaView, Image } from 'react-native';
 import { Button, Paragraph, Title, Subheading } from 'react-native-paper';
 
 import { connect } from 'react-redux';
-import { fetchAppointments, setUser } from '../actions';
+import { setUser } from '../actions';
 
 import * as Linking from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser';
@@ -79,7 +79,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     setUser: (user) => dispatch(setUser(user)),
-    fetchAppointments: () => dispatch(fetchAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginScreen);

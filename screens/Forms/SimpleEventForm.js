@@ -8,7 +8,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 
 import { connect } from 'react-redux';
-import { postAppointment, fetchAppointments, loadLocalAppointments } from '../../actions';
+import { postAppointment, loadLocalAppointments } from '../../actions';
 
 const SimpleEventForm = (props) => {
     const [appointment, setAppointment] = useState({
@@ -37,10 +37,10 @@ const SimpleEventForm = (props) => {
         </View>
     );
 
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
         if (!appointmentIsValid()) return;
         setLoading(true);
-        await props.postAppointment(appointment)
+        props.postAppointment(appointment)
             .then(props.loadLocalAppointments())
             .catch(error => console.log(error));
         resetAppointment();
@@ -242,7 +242,6 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     postAppointment: (appointment) => dispatch(postAppointment(appointment)),
-    fetchAppointments: () => dispatch(fetchAppointments()),
     loadLocalAppointments: () => dispatch(loadLocalAppointments()),
 });
 

@@ -3,7 +3,7 @@ import { StyleSheet, SafeAreaView } from 'react-native';
 import { ActivityIndicator, Paragraph } from 'react-native-paper';
 
 import { connect } from 'react-redux';
-import { fetchAppointments, setUser } from '../actions';
+import { setUser } from '../actions';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -44,7 +44,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     setUser: (user) => dispatch(setUser(user)),
-    fetchAppointments: () => dispatch(fetchAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(LogoutScreen);

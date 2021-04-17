@@ -5,7 +5,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 import { connect } from 'react-redux';
-import { updateAppointment, deleteAppointment, fetchAppointments } from '../../actions';
+import { updateAppointment, deleteAppointment, loadLocalAppointments } from '../../actions';
 
 
 const EditEventForm = (props) => {
@@ -45,7 +45,7 @@ const EditEventForm = (props) => {
         if (!appointmentIsValid()) return;
         setLoading(true);
         await props.updateAppointment(appointment)
-        setTimeout(() => props.fetchAppointments()
+        setTimeout(() => props.loadLocalAppointments()
             .then(resetAppointment())
             .then(props.sheetRef.current.snapTo(1))
             .then(setLoading(false)), 25);
@@ -54,7 +54,7 @@ const EditEventForm = (props) => {
     const handleDelete = async () => {
         setLoading(true);
         await props.deleteAppointment(appointment.appointmentId);
-        setTimeout(() => props.fetchAppointments()
+        setTimeout(() => props.loadLocalAppointments()
             .then(resetAppointment())
             .then(props.sheetRef.current.snapTo(1))
             .then(setLoading(false)), 25);
@@ -257,7 +257,7 @@ const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
     updateAppointment: appointment => dispatch(updateAppointment(appointment)),
     deleteAppointment: appointmentId => dispatch(deleteAppointment(appointmentId)),
-    fetchAppointments: () => dispatch(fetchAppointments()),
+    loadLocalAppointments: () => dispatch(loadLocalAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(EditEventForm);

@@ -27,61 +27,73 @@ export const syncAppointments = () => {
     return async (dispatch, getState) => {
         const googleId = getState().data.user.googleId;
 
-        console.log('loading appointmentsToPost...');
+        // console.log('loading appointmentsToPost...');
         const appointmentsToPost = await AsyncStorage.getItem('timeflexAppointmentsToPost')
             .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
-            .then(obj => obj.data ? [...obj.data] : [])
+            .then(obj => obj.data ? obj.data : [])
             .catch(error => console.log(error));
 
-        console.log('posting the appointments to server...');
+        // console.log('posting the appointments to server...');
         appointmentsToPost.forEach(appointment => {
             postAppointment(appointment);
         });
 
-        console.log('loading appointmentsToDelete');
+        // console.log('loading appointmentsToDelete');
         const appointmentsToDelete = await AsyncStorage.getItem('timeflexAppointmentsToDelete')
             .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
-            .then(obj => obj.data ? [...appointmentsToDeleteobj.data] : [])
+            .then(obj => obj.data ? obj.data : [])
             .catch(error => console.log(error));
 
-        console.log('deleting the appointments from server...');
+        // console.log('deleting the appointments from server...');
         appointmentsToDelete.forEach(appointment => {
             deleteAppointment(appointment.appointmentId);
         });
 
-        console.log('clearing the local temporay storage...');
+        // console.log('clearing the local temporay storage...');
         await AsyncStorage.setItem('timeflexAppointmentsToPost', '');
         await AsyncStorage.setItem('timeflexAppointmentsToDelete', '');
 
-        console.log('fetching data from server...');
+        // console.log('fetching data from server...');
         dispatch(fetchAppointmentsRequest());
-        const updatedAppointments = await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+        await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
             .then(res => res.json())
-            .then(fetchAppointmentsSuccess([]));
-        const appointmentsJSON = { data: updatedAppointments };
-
-        console.log('inserting the data to local storage...')
-        dispatch(postAppointmentRequest());
-        await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
-            .then(dispatch(postAppointmentSuccess()))
-            .catch(error => dispatch(postAppointmentFailure(error.message)));
-
+            .then(res => ({ data: res }))
+            .then(async (appointmentsObj) => {
+                console.log('inserting the data to local storage...');
+                dispatch(postAppointmentRequest());
+                await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsObj))
+                    .then(dispatch(postAppointmentSuccess()))
+                    .catch(error => dispatch(postAppointmentFailure(error.message)));
+            })
+            .catch(error => console.log(error));
         console.log('finished synchronization');
     };
 };
 
 export const loadLocalAppointments = () => {
     return async (dispatch) => {
+        // console.log('loading appointments from storage...');
+
         dispatch(fetchAppointmentsRequest());
-        const existingAppointments = await AsyncStorage.getItem('timeflexAppointments')
+        await AsyncStorage.getItem('timeflexAppointments')
             .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
-            .then(obj => obj.data ? [...obj.data] : [])
+            .then(obj => obj.data ? obj.data : [])
+            .then(appointments => {
+                fetchAppointmentsSuccess(appointments);
+                console.log('tag', appointments)
+            })
             .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-        const appointmentsToPost = await AsyncStorage.getItem('timeflexAppointmentsToPost')
-            .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
-            .then(obj => obj.data ? [...obj.data] : [])
-            .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-        dispatch(fetchAppointmentsSuccess([...existingAppointments, ...appointmentsToPost]));
+
+        // console.log('loading appointments from temporary storage...');
+        // dispatch(fetchAppointmentsRequest());
+        // await AsyncStorage.getItem('timeflexAppointmentsToPost')
+        //     .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+        //     .then(obj => obj.data ? obj.data : [])
+        //     // .then(appointments => { fetchAppointmentsSuccess(appointments); console.log(appointments) })
+        //     .then(appointments => fetchAppointmentsSuccess(appointments))
+        //     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
+
+        console.log('finished data loading');
     };
 };
 
@@ -94,6 +106,7 @@ export const postAppointment = (appointment) => {
             let storageKey = 'timeflexAppointmentsToPost';
 
             if (state.isInternetReachable) {
+                console.log('posting appointments to server...');
                 storageKey = 'timeflexAppointments';
 
                 await fetch('https://timeflex-web.herokuapp.com/appointments', {
@@ -102,22 +115,30 @@ export const postAppointment = (appointment) => {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(appointment),
+                    body: JSON.stringify({
+                        type: 'simple',
+                        appointment: newAppointment
+                    }),
                     credentials: 'include',
                 })
                     .then(dispatch(postAppointmentSuccess()))
                     .catch(error => dispatch(postAppointmentFailure(error.message)));
             }
+            console.log('loading appointments from storage...');
             const appointments = await AsyncStorage.getItem(storageKey)
                 .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
                 .then(obj => obj.data ? [...obj.data] : [])
                 .catch(error => console.log(error));
 
+            console.log('mutating the appointments array to add a new appointment...');
             const updatedAppointments = [...appointments, newAppointment];
             const appointmentsJSON = { data: updatedAppointments };
+            console.log('saving the updated appointments to storage...');
             await AsyncStorage.setItem(storageKey, JSON.stringify(appointmentsJSON))
                 .then(dispatch(postAppointmentSuccess()))
                 .catch(error => dispatch(postAppointmentFailure(error.message)));
+
+            console.log('finished appointments creation');
         });
     };
 };
@@ -194,10 +215,10 @@ export const deleteAppointment = appointmentId => {
                 const appointmentsToDelete = await AsyncStorage.getItem('timeflexAppointmentsToDelete')
                     .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
                     .then(obj => obj.data ? [...obj.data] : []);
-                appointmentsToDelete = [...appointmentsToDelete, appointmentId];
-                const appointmentsToDeleteJSON = { data: appointmentsToDelete };
+                const updatedAppointmentsToDelete = [...appointmentsToDelete, appointmentId];
+                const updatedAppointmentsToDeleteJSON = { data: updatedAppointmentsToDelete };
 
-                await AsyncStorage.setItem('timeflexAppointmentsToDelete', JSON.stringify(appointmentsToDeleteJSON))
+                await AsyncStorage.setItem('timeflexAppointmentsToDelete', JSON.stringify(updatedAppointmentsToDeleteJSON))
 
                 dispatch(deleteAppointmentSuccess());
             }
@@ -226,7 +247,7 @@ export const fetchAppointmentsRequest = () => {
 export const fetchAppointmentsSuccess = appointments => {
     return {
         type: 'FETCH_APPOINTMENTS_SUCCESS',
-        payload: [...appointments]
+        payload: appointments
     };
 };
 

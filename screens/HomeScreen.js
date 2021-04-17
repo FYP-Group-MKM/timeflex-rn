@@ -5,7 +5,7 @@ import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
 
 import { connect } from 'react-redux';
-import { setCurrentDate, fetchAppointments, loadLocalAppointments, syncAppointments } from '../actions';
+import { setCurrentDate, loadLocalAppointments, syncAppointments } from '../actions';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
@@ -22,7 +22,9 @@ const HomeScreen = (props) => {
     useEffect(() => {
         props.syncAppointments()
             .then(props.loadLocalAppointments());
-    }, [props.user.googleId]);
+    }, []);
+
+    console.log('homescreen', props.appointments)
 
     const translatedAppointments = props.appointments.map(appointment => {
         const translatedAppointment = {
@@ -152,7 +154,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
-    fetchAppointments: () => dispatch(fetchAppointments()),
     loadLocalAppointments: () => dispatch(loadLocalAppointments()),
     syncAppointments: () => dispatch(syncAppointments())
 });

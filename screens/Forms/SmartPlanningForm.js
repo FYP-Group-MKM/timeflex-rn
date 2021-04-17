@@ -9,7 +9,7 @@ import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 
 import { connect } from 'react-redux';
-import { postAppointment, fetchAppointments, loadLocalAppointments } from '../../actions';
+import { postAppointment, loadLocalAppointments } from '../../actions';
 
 import smartPlanning from '../../smartPlanning';
 
@@ -322,7 +322,6 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     postAppointment: (appointment) => dispatch(postAppointment(appointment)),
-    fetchAppointments: () => dispatch(fetchAppointments()),
     loadLocalAppointments: () => dispatch(loadLocalAppointments()),
 });
 
