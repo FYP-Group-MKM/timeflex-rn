@@ -27,33 +27,27 @@ export const syncAppointments = () => {
     return async (dispatch, getState) => {
         const googleId = getState().data.user.googleId;
 
-        // console.log('loading appointmentsToPost...');
         const appointmentsToPost = await AsyncStorage.getItem('timeflexAppointmentsToPost')
             .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
             .then(obj => obj.data ? obj.data : [])
             .catch(error => console.log(error));
 
-        // console.log('posting the appointments to server...');
         appointmentsToPost.forEach(appointment => {
             postAppointment(appointment);
         });
 
-        // console.log('loading appointmentsToDelete');
         const appointmentsToDelete = await AsyncStorage.getItem('timeflexAppointmentsToDelete')
             .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
             .then(obj => obj.data ? obj.data : [])
             .catch(error => console.log(error));
 
-        // console.log('deleting the appointments from server...');
         appointmentsToDelete.forEach(appointment => {
             deleteAppointment(appointment.appointmentId);
         });
 
-        // console.log('clearing the local temporay storage...');
         await AsyncStorage.setItem('timeflexAppointmentsToPost', '');
         await AsyncStorage.setItem('timeflexAppointmentsToDelete', '');
 
-        // console.log('fetching data from server...');
         dispatch(fetchAppointmentsRequest());
         await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
             .then(res => res.json())
@@ -72,27 +66,18 @@ export const syncAppointments = () => {
 
 export const loadLocalAppointments = () => {
     return async (dispatch) => {
-        // console.log('loading appointments from storage...');
-
         dispatch(fetchAppointmentsRequest());
         await AsyncStorage.getItem('timeflexAppointments')
             .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
             .then(obj => obj.data ? obj.data : [])
-            .then(appointments => {
-                fetchAppointmentsSuccess(appointments);
-                console.log('tag', appointments)
+            .then(async appointments => {
+                await AsyncStorage.getItem('timeflexAppointmentsToPost')
+                    .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+                    .then(obj => obj.data ? obj.data : [])
+                    .then(appointmentsToPost => fetchAppointmentsSuccess([...appointments, ...appointmentsToPost]))
+                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
             })
             .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-
-        // console.log('loading appointments from temporary storage...');
-        // dispatch(fetchAppointmentsRequest());
-        // await AsyncStorage.getItem('timeflexAppointmentsToPost')
-        //     .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
-        //     .then(obj => obj.data ? obj.data : [])
-        //     // .then(appointments => { fetchAppointmentsSuccess(appointments); console.log(appointments) })
-        //     .then(appointments => fetchAppointmentsSuccess(appointments))
-        //     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-
         console.log('finished data loading');
     };
 };
