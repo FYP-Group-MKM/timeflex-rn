@@ -72,7 +72,7 @@ const HomeScreen = (props) => {
                     actions={[
                         // {
                         //     icon: 'school',
-                        //     label: 'Class',
+                        //     label: props.user.username,
                         //     onPress: () => { },
                         // },
                         {

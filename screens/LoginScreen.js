@@ -19,10 +19,11 @@ const LoginScreen = (props) => {
 
     const handleOAuthLogin = async () => {
         let redirectUrl = await Linking.getInitialURL();
+        console.log(redirectUrl)
         Linking.addEventListener('url', handleRedirect);
         try {
             let authResult = await WebBrowser.openAuthSessionAsync(`https://timeflex-web.herokuapp.com/expo-auth/google`, redirectUrl);
-            const userURIComponent = authResult.url.replace('exp://exp.host/@darren1208/timeflex-rn/', '');
+            const userURIComponent = authResult.url.replace('timeflex://', '');
             const userJSON = decodeURIComponent(userURIComponent);
             await AsyncStorage.setItem('timeflexUser', userJSON)
                 .then(props.setUser(JSON.parse(userJSON)))
