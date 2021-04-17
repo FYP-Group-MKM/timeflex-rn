@@ -74,7 +74,7 @@ export const loadLocalAppointments = () => {
                 await AsyncStorage.getItem('timeflexAppointmentsToPost')
                     .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
                     .then(obj => obj.data ? obj.data : [])
-                    .then(appointmentsToPost => fetchAppointmentsSuccess([...appointments, ...appointmentsToPost]))
+                    .then(appointmentsToPost => dispatch(fetchAppointmentsSuccess([...appointments, ...appointmentsToPost])))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
             })
             .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
