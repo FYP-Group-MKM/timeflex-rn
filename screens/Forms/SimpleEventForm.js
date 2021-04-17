@@ -41,7 +41,7 @@ const SimpleEventForm = (props) => {
         if (!appointmentIsValid()) return;
         setLoading(true);
         props.postAppointment(appointment)
-            .then(props.loadLocalAppointments())
+            .then(res => props.loadLocalAppointments())
             .catch(error => console.log(error));
         resetAppointment();
         props.sheetRef.current.snapTo(1);

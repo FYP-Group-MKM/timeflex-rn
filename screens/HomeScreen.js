@@ -11,6 +11,8 @@ import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
 import EditEventForm from './Forms/EditEventForm';
 
+import NetInfo from '@react-native-community/netinfo';
+
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
     const smartPlanningFormRef = React.useRef(null);
@@ -20,11 +22,17 @@ const HomeScreen = (props) => {
     const dateString = format(props.currentDate, 'MMM yyyy');
 
     useEffect(() => {
-        props.syncAppointments()
-            .then(props.loadLocalAppointments());
+        NetInfo.fetch().then(async state => {
+            if (state.isInternetReachable) {
+                await props.syncAppointments()
+                    .then(props.loadLocalAppointments());
+            } else {
+                await props.loadLocalAppointments();
+            }
+        })
     }, []);
 
-    console.log('homescreen', props.appointments)
+    console.log(props.appointments)
 
     const translatedAppointments = props.appointments.map(appointment => {
         const translatedAppointment = {
