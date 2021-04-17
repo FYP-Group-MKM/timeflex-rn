@@ -6,7 +6,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { connect } from 'react-redux';
-import { fetchAppointments,fetchAppointmentsSuccess, setUser } from './actions';
+import { fetchAppointments,fetchAppointmentsSuccess, setUser, fetchCloudAppointments, fectchLocalData } from './actions';
 
 import HomeScreen from './screens/HomeScreen';
 import LogoutScreen from './screens/LogoutScreen';
@@ -29,47 +29,66 @@ const loadLocalAppointments = async () => {
 
 //onlineAppointments is an array retrive from fetch 
 //loxal appointmentss is an array retrive from local storage
-const sych = (onlineAppointments, localAppointments) => {
-    //Make the localAppointments be the string stuff
-    //taget pass the local to the Exprees
-    const jsonLocal = localAppointments.map((appointment) => {
-        return JSON.stringify(appointment)
-    })
+const sych = async (onlineAppointments,localAppointments,toAdd,toDelete) => {
+    //Todelete //to addd // mainStorage
+    //download all the stuff from cloud download to the local storage
     const jsonOnline = onlineAppointments.map((appointment) => {
         return JSON.stringify(appointment)
     })
+    const jsonLocal = localAppointments.map((appointment) => {
+        return JSON.stringify(appointment)
+    })
 
-    //if the online one not exist in local one --> store to local
-    const diffToExpress = onlineAppointments.map((appointment)=> {
-        if(!(JSON.stringify(appointment)  in jsonLocal)){
+    const appointmentsAddToLocal = onlineAppointments.map((appointment) => {
+        if(!(JSON.stringify(appointment) in jsonLocal) ){
             return JSON.parse(appointment)
         }
-        
-    })
-    //This array will upload to web
-    const diffToLocal = localAppointments.map((appointment) => {
-        if(!(JSON.stringify(appointment)  in jsonOnline)){
-            return JSON.parse(appointment)    
-        }
-    })
-
-    //Then upload to online
-    diffToLocal.array.forEach( async(element) => {
-        await fetch('https://timeflex-web.herokuapp.com/appointments', {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(element),
-                    credentials: 'include',
-                })
-    });
-    //store to local array
-    diffToExpress.array.forEach(async (element) => {
-        await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(element))
     })
     
+    //Add this to local main storage
+    let orginalData = []
+    await AsyncStorage.getItem('timeflexAppointments')
+                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
+                        .then(data => { if (data) orginalData = [...data] })
+                        .catch(error => console.log(error))
+
+    const updatedAppointments = [...orginalData, ... appointmentsAddToLocal];
+    const appointmentsJSON = { data: updatedAppointments };
+    await AsyncStorage.setItem('timeflexAppointmemnts', JSON.stringify(appointmentsJSON))
+
+    //Send toAdd update to the server.
+    const toaddArray = []
+    await AsyncStorage.getItem('timeflexAppointmentsToPost')
+                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
+                        .then(data => { if (data) toaddArray = [...data] })
+
+
+
+    //Add 
+    toaddArray.forEach( (element) => {
+        await fetch('https://timeflex-web.herokuapp.com/appointments', {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(element),
+        credentials: 'include',
+    }
+    )
+
+    }
+        )
+
+    const emptyObj = {data:[]}
+    await AsyncStorage.setItem('timeflexSppointmentsToPost',JSON.stringify(emptyObj))
+    
+
+
+
+    //Send to delete request to the server
+
+
 
 } 
 

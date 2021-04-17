@@ -32,11 +32,8 @@ export const fetchAppointments = () => {
                 const googleId = getState().data.user.googleId;
                 await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
                     .then(res => res.json())
-                    // .then(data => dispatch(fetchAppointmentsSuccess(data)))
+                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));           
-               
-                
-                
             } else {
                 console.log('Offline Mode')
                 await AsyncStorage.getItem('timeflexAppointments')
@@ -67,7 +64,7 @@ export const fetchCloudAppointments = async () => {
         const googleId = getState().data.user.googleId;
                 await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
                     .then(res => res.json())
-                    // .then(data => dispatch(fetchAppointmentsSuccess(data)))
+                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));   
     }
 }
@@ -107,7 +104,7 @@ export const postAppointment = (appointment) => {
                         .catch(error => console.log(error))
                     
                     const newAppointment = { ...appointment.appointment, appointmentId: uuid.v4() };
-                    const reduxUpdate  =  [...appointment,...topost, newAppointment]
+                    const reduxUpdate  =  [...appointment,...topost, newAppointment]//maybe useful
                     const updatedAppointments = [...topost, newAppointment];
                     const appointmentsJSON = { data: updatedAppointments };
                     await AsyncStorage.setItem('timeflexAppointmemntsToPost', JSON.stringify(appointmentsJSON))
@@ -193,7 +190,7 @@ export const deleteAppointment = appointmentId => {
                     //Redux
                     const updatedAppointments = appointments.filter(appointment => appointment.appointmentId !== appointmentId);
                     todelete = appointments.map(appointment => appointment.appointmentId === appointmentId);
-                    // const appointmentsJSON = { data: updatedAppointments };
+                    // const appointmentsJSON = { data: updatedAppointments }; //The UI may have to change it
                     await AsyncStorage.setItem('timeflexAppointmentsToDelete', JSON.stringify(todelete))
                         .then(dispatch(deleteAppointmentSuccess()))
                         .catch(error => dispatch(deleteAppointmentFailure(error.message)));
