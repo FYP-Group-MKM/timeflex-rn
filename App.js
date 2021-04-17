@@ -29,41 +29,13 @@ const loadLocalAppointments = async () => {
 
 //onlineAppointments is an array retrive from fetch 
 //loxal appointmentss is an array retrive from local storage
-const sych = async (onlineAppointments,localAppointments,toAdd,toDelete) => {
+const sych = async (googleId) => {
     //Todelete //to addd // mainStorage
-    //download all the stuff from cloud download to the local storage
-    const jsonOnline = onlineAppointments.map((appointment) => {
-        return JSON.stringify(appointment)
-    })
-    const jsonLocal = localAppointments.map((appointment) => {
-        return JSON.stringify(appointment)
-    })
-
-    const appointmentsAddToLocal = onlineAppointments.map((appointment) => {
-        if(!(JSON.stringify(appointment) in jsonLocal) ){
-            return JSON.parse(appointment)
-        }
-    })
-    
-    //Add this to local main storage
-    let orginalData = []
-    await AsyncStorage.getItem('timeflexAppointments')
-                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
-                        .then(data => { if (data) orginalData = [...data] })
-                        .catch(error => console.log(error))
-
-    const updatedAppointments = [...orginalData, ... appointmentsAddToLocal];
-    const appointmentsJSON = { data: updatedAppointments };
-    await AsyncStorage.setItem('timeflexAppointmemnts', JSON.stringify(appointmentsJSON))
-
-    //Send toAdd update to the server.
+    //add the stuff to the cloud first
     const toaddArray = []
     await AsyncStorage.getItem('timeflexAppointmentsToPost')
                         .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
                         .then(data => { if (data) toaddArray = [...data] })
-
-
-
     //Add 
     toaddArray.forEach( (element) => {
         await fetch('https://timeflex-web.herokuapp.com/appointments', {
@@ -75,20 +47,50 @@ const sych = async (onlineAppointments,localAppointments,toAdd,toDelete) => {
         body: JSON.stringify(element),
         credentials: 'include',
     }
-    )
-
-    }
-        )
-
+    )})
     const emptyObj = {data:[]}
-    await AsyncStorage.setItem('timeflexSppointmentsToPost',JSON.stringify(emptyObj))
-    
-
+    await AsyncStorage.setItem('timeflexSppointmentsToPost',JSON.stringify(emptyObj))//Reset to add
 
 
     //Send to delete request to the server
+    const toDeleteArray = []
+    await AsyncStorage.getItem('timeflexAppointmentsToDelete')
+    .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
+    .then(data => { if (data) toDeleteArray = [...data] })
 
+    toDeleteArray.forEach((appointment) => {
+        await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId + '/' + appointment.appointmentId, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                })
+    })
+    //Reset the todelete
+    await AsyncStorage.setItem('timeflexSppointmentsToDelete',JSON.stringify(emptyObj))//Reset to add
 
+    //Pull back to local
+    let cloudData = []
+
+    await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+                    .then(res => res.json())
+                    .then(data =>  cloudData = [...data])
+                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));   
+
+    
+    //Add this to local main storage
+    let orginalData = []
+    await AsyncStorage.getItem('timeflexAppointments')
+                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
+                        .then(data => { if (data) orginalData = [...data] })
+                        .catch(error => console.log(error))
+
+    const updatedAppointments = [...orginalData, ... cloudData];
+    const uniqueAppintments = updatedAppointments.filter((item,index) => updatedAppointments.indexOf(item) === index);
+    const appointmentsJSON = { data: uniqueAppintments };
+    await AsyncStorage.setItem('timeflexAppointmemnts', JSON.stringify(appointmentsJSON))
 
 } 
 
