@@ -75,6 +75,29 @@ export const syncAppointments = () => {
             .then(AsyncStorage.setItem('timeflexAppointmentsToDelete', ''))
             .catch(error => console.log(error));
 
+        const editUpdate = async () => await AsyncStorage.getItem('timeflexAppointmentsToUpdate')
+            .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+            .then(obj => obj.data ? obj.data : [])
+            .then(appointmentsToUpdate => {
+                dispatch(updateAppointmentRequest());
+                appointmentsToUpdate.forEach(async updatedAppointment => {
+                    await fetch(`https://timeflex-web.herokuapp.com/appointments/${googleId}/${updatedAppointment.appointmentId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(updatedAppointment),
+                        credentials: 'include'
+                    })
+                        .then(dispatch(updateAppointmentSuccess()))
+                        .catch(error => dispatch(updateAppointmentFailure(error.message)));
+                })
+            })
+            .then(console.log('removed deleted appointments from server'))
+            .then(AsyncStorage.setItem('timeflexAppointmentsToUpdate', ''))
+            .catch(error => console.log(error));
+
         const fetchUpdate = async () => {
             dispatch(fetchAppointmentsRequest());
             await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
@@ -91,7 +114,8 @@ export const syncAppointments = () => {
 
         await postUpdate()
             .then(deleteUpdate()
-                .then(fetchUpdate()));
+                .then(editUpdate()
+                    .then(fetchUpdate())));
     };
 };
 
