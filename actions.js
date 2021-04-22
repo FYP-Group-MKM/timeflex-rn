@@ -75,6 +75,29 @@ export const syncAppointments = () => {
             .then(AsyncStorage.setItem('timeflexAppointmentsToDelete', ''))
             .catch(error => console.log(error));
 
+        const editUpdate = async () => await AsyncStorage.getItem('timeflexAppointmentsToUpdate')
+            .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+            .then(obj => obj.data ? obj.data : [])
+            .then(appointmentsToUpdate => {
+                dispatch(updateAppointmentRequest());
+                appointmentsToUpdate.forEach(async updatedAppointment => {
+                    await fetch(`https://timeflex-web.herokuapp.com/appointments/${googleId}/${updatedAppointment.appointmentId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(updatedAppointment),
+                        credentials: 'include'
+                    })
+                        .then(dispatch(updateAppointmentSuccess()))
+                        .catch(error => dispatch(updateAppointmentFailure(error.message)));
+                })
+            })
+            .then(console.log('removed deleted appointments from server'))
+            .then(AsyncStorage.setItem('timeflexAppointmentsToUpdate', ''))
+            .catch(error => console.log(error));
+
         const fetchUpdate = async () => {
             dispatch(fetchAppointmentsRequest());
             await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
@@ -91,7 +114,8 @@ export const syncAppointments = () => {
 
         await postUpdate()
             .then(deleteUpdate()
-                .then(fetchUpdate()));
+                .then(editUpdate()
+                    .then(fetchUpdate())));
     };
 };
 
@@ -157,6 +181,15 @@ export const updateAppointment = updatedAppointment => {
     return async (dispatch, getState) => {
         dispatch(updateAppointmentRequest());
         const googleId = getState().data.user.googleId;
+        await AsyncStorage.getItem('timeflexAppointments')
+            .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+            .then(obj => obj.data ? obj.data : [])
+            .then(async appointments => {
+                const tempAppointments = appointments.filter(appointment => appointment.appointmentId !== updatedAppointment.appointmentId);
+                const updatedAppointments = [...tempAppointments, updatedAppointment];
+                const updatedAppointmentsJSON = { data: updatedAppointments };
+                await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(updatedAppointmentsJSON))
+            });
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
                 await fetch(`https://timeflex-web.herokuapp.com/appointments/${googleId}/${updatedAppointment.appointmentId}`, {
@@ -171,23 +204,15 @@ export const updateAppointment = updatedAppointment => {
                     .then(dispatch(updateAppointmentSuccess()))
                     .catch(error => dispatch(updateAppointmentFailure(error.message)));
             } else {
-                // try {
-                //     console.log(updatedAppointment)
-                //     let appointments = [];
-                //     await AsyncStorage.getItem('timeflexAppointments')
-                //         .then(appointmentsJSON => { if (appointmentsJSON) return appointmentsJSON?JSON.parse(appointmentsJSON):{}.data })
-                //         .then(data => { if (data) appointments = [...data] })
-                //     const updatedAppointments = [
-                //         ...appointments.filter(appointment => appointment.appointmentId !== updatedAppointment.appointmentId),
-                //         updatedAppointment
-                //     ];
-                //     const appointmentsJSON = { data: updatedAppointments };
-                //     await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
-                //         .then(dispatch(updateAppointmentSuccess()))
-                //         .catch(error => dispatch(updateAppointmentFailure(error.message)));
-                // } catch (e) {
-                //     console.log(e);
-                // }
+                await AsyncStorage.getItem('timeflexAppointmentsToUpdate')
+                    .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+                    .then(obj => obj.data ? obj.data : [])
+                    .then(async appointmentsToUpdate => {
+                        const updatedAppointmentsToUpdate = [...appointmentsToUpdate, updatedAppointment];
+                        const updatedAppointmentsToUpdateJSON = { data: updatedAppointmentsToUpdate };
+                        await AsyncStorage.setItem('timeflexAppointmentsToUpdate', JSON.stringify(updatedAppointmentsToUpdateJSON))
+                    })
+                    .then(dispatch(deleteAppointmentSuccess()));
             }
         });
     };
