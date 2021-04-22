@@ -68,10 +68,11 @@ const SmartPlanningForm = (props) => {
         }
 
         await result.forEach(async newAppointment => {
-            await props.postAppointment(newAppointment);
+            await props.postAppointment(newAppointment)
+                .then(res => props.loadLocalAppointments());
         });
 
-        props.loadLocalAppointments();
+        setTimeout(props.loadLocalAppointments, 100);
         props.sheetRef.current.snapTo(1);
         resetAppointment();
         setLoading(false);
