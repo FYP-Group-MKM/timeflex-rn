@@ -23,61 +23,132 @@ export const setAppointmentForm = (isOpen) => {
     };
 };
 
-export const fetchAppointments = () => {
+export const syncAppointments = () => {
     return async (dispatch, getState) => {
+        const googleId = getState().data.user.googleId;
+
+        const postUpdate = async () => await AsyncStorage.getItem('timeflexAppointmentsToPost')
+            .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+            .then(obj => obj.data ? obj.data : [])
+            .then(appointmentsToPost => {
+                appointmentsToPost.forEach(async appointment => {
+                    dispatch(postAppointmentRequest());
+                    await fetch('https://timeflex-web.herokuapp.com/appointments', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            type: 'simple',
+                            appointment: appointment
+                        }),
+                        credentials: 'include',
+                    })
+                        .then(dispatch(postAppointmentSuccess()))
+                        .then(console.log('posted update to server'))
+                        .catch(error => dispatch(postAppointmentFailure(error.message)));
+                });
+            })
+            .then(AsyncStorage.setItem('timeflexAppointmentsToPost', ''))
+            .catch(error => console.log(error));
+
+        const deleteUpdate = async () => await AsyncStorage.getItem('timeflexAppointmentsToDelete')
+            .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+            .then(obj => obj.data ? obj.data : [])
+            .then(appointmentsToDelete => {
+                appointmentsToDelete.forEach(async appointmentId => {
+                    dispatch(deleteAppointmentRequest());
+                    await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId + '/' + appointmentId, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'include',
+                    })
+                        .then(deleteAppointmentSuccess())
+                        .catch(error => dispatch(deleteAppointmentFailure(error.message)));
+                })
+            })
+            .then(console.log('removed deleted appointments from server'))
+            .then(AsyncStorage.setItem('timeflexAppointmentsToDelete', ''))
+            .catch(error => console.log(error));
+
+        const fetchUpdate = async () => {
+            dispatch(fetchAppointmentsRequest());
+            await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
+                .then(res => res.json())
+                .then(res => ({ data: res }))
+                .then(async (appointmentsObj) => {
+                    dispatch(fetchAppointmentsSuccess(appointmentsObj.data))
+                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsObj))
+                        .then(console.log('updated the local storage'))
+                })
+                .then()
+                .catch(error => dispatch(fetchAppointmentsFailure(error)));
+        };
+
+        await postUpdate()
+            .then(deleteUpdate()
+                .then(fetchUpdate()));
+    };
+};
+
+export const loadLocalAppointments = () => {
+    return async (dispatch) => {
         dispatch(fetchAppointmentsRequest());
-        await NetInfo.fetch().then(async (state) => {
-            if (state.isInternetReachable) {
-                const googleId = getState().data.user.googleId;
-                await fetch('https://timeflex-web.herokuapp.com/appointments/' + googleId)
-                    .then(res => res.json())
-                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
+        await AsyncStorage.getItem('timeflexAppointments')
+            .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+            .then(obj => obj.data ? obj.data : [])
+            .then(async appointments => {
+                await AsyncStorage.getItem('timeflexAppointmentsToPost')
+                    .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+                    .then(obj => obj.data ? obj.data : [])
+                    .then(appointmentsToPost => dispatch(fetchAppointmentsSuccess([...appointments, ...appointmentsToPost])))
+                    .then(() => console.log('loaded data from storage'))
                     .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-            } else {
-                await AsyncStorage.getItem('timeflexAppointments')
-                    .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON).data : [])
-                    .then(data => dispatch(fetchAppointmentsSuccess(data)))
-                    .catch(error => dispatch(fetchAppointmentsFailure(error.message)));
-            }
-        });
+            });
     };
 };
 
 export const postAppointment = (appointment) => {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
         dispatch(postAppointmentRequest());
         await NetInfo.fetch().then(async (state) => {
+            const googleId = getState().data.user.googleId;
+            const newAppointment = { ...appointment, appointmentId: uuid.v4(), googleId: googleId };
+            let storageKey = 'timeflexAppointmentsToPost';
+
             if (state.isInternetReachable) {
+                console.log('posting appointments to server...');
+                storageKey = 'timeflexAppointments';
+
                 await fetch('https://timeflex-web.herokuapp.com/appointments', {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(appointment),
+                    body: JSON.stringify({
+                        type: 'simple',
+                        appointment: newAppointment
+                    }),
                     credentials: 'include',
                 })
                     .then(dispatch(postAppointmentSuccess()))
                     .catch(error => dispatch(postAppointmentFailure(error.message)));
-            } else {
-                if (appointment.type === 'simple') {
-                    let appointments = [];
-                    await AsyncStorage.getItem('timeflexAppointments')
-                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
-                        .then(data => { if (data) appointments = [...data] })
-                        .catch(error => console.log(error))
-                    const newAppointment = { ...appointment.appointment, appointmentId: uuid.v4() };
+            }
+            await AsyncStorage.getItem(storageKey)
+                .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+                .then(obj => obj.data ? [...obj.data] : [])
+                .then(async appointments => {
                     const updatedAppointments = [...appointments, newAppointment];
                     const appointmentsJSON = { data: updatedAppointments };
-                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
-                        .then(dispatch(postAppointmentSuccess()))
-                        .catch(error => dispatch(postAppointmentFailure(error.message)));
-                }
-
-                if (appointment.type === 'smart') {
-
-                }
-            }
+                    await AsyncStorage.setItem(storageKey, JSON.stringify(appointmentsJSON))
+                })
+                .then(dispatch(postAppointmentSuccess()))
+                .catch(error => console.log(error));
         });
     };
 };
@@ -100,23 +171,23 @@ export const updateAppointment = updatedAppointment => {
                     .then(dispatch(updateAppointmentSuccess()))
                     .catch(error => dispatch(updateAppointmentFailure(error.message)));
             } else {
-                try {
-                    console.log(updatedAppointment)
-                    let appointments = [];
-                    await AsyncStorage.getItem('timeflexAppointments')
-                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
-                        .then(data => { if (data) appointments = [...data] })
-                    const updatedAppointments = [
-                        ...appointments.filter(appointment => appointment.appointmentId !== updatedAppointment.appointmentId),
-                        updatedAppointment
-                    ];
-                    const appointmentsJSON = { data: updatedAppointments };
-                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
-                        .then(dispatch(updateAppointmentSuccess()))
-                        .catch(error => dispatch(updateAppointmentFailure(error.message)));
-                } catch (e) {
-                    console.log(e);
-                }
+                // try {
+                //     console.log(updatedAppointment)
+                //     let appointments = [];
+                //     await AsyncStorage.getItem('timeflexAppointments')
+                //         .then(appointmentsJSON => { if (appointmentsJSON) return appointmentsJSON?JSON.parse(appointmentsJSON):{}.data })
+                //         .then(data => { if (data) appointments = [...data] })
+                //     const updatedAppointments = [
+                //         ...appointments.filter(appointment => appointment.appointmentId !== updatedAppointment.appointmentId),
+                //         updatedAppointment
+                //     ];
+                //     const appointmentsJSON = { data: updatedAppointments };
+                //     await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
+                //         .then(dispatch(updateAppointmentSuccess()))
+                //         .catch(error => dispatch(updateAppointmentFailure(error.message)));
+                // } catch (e) {
+                //     console.log(e);
+                // }
             }
         });
     };
@@ -124,7 +195,17 @@ export const updateAppointment = updatedAppointment => {
 
 export const deleteAppointment = appointmentId => {
     return async (dispatch, getState) => {
+        console.log('deleting appointment...');
         dispatch(deleteAppointmentRequest());
+        await AsyncStorage.getItem('timeflexAppointments')
+            .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+            .then(obj => obj.data ? obj.data : [])
+            .then(async appointments => {
+                const updatedAppointments = appointments.filter(appointment => appointment.appointmentId !== appointmentId);
+                console.log(updatedAppointments)
+                const updatedAppointmentsJSON = { data: updatedAppointments };
+                await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(updatedAppointmentsJSON))
+            });
         await NetInfo.fetch().then(async (state) => {
             if (state.isInternetReachable) {
                 const googleId = getState().data.user.googleId;
@@ -136,25 +217,22 @@ export const deleteAppointment = appointmentId => {
                     },
                     credentials: 'include',
                 })
-                    .then(dispatch(deleteAppointmentSuccess()))
                     .catch(error => dispatch(deleteAppointmentFailure(error.message)));
             } else {
-                try {
-                    let appointments = [];
-                    await AsyncStorage.getItem('timeflexAppointments')
-                        .then(appointmentsJSON => { if (appointmentsJSON) return JSON.parse(appointmentsJSON).data })
-                        .then(data => { if (data) appointments = [...data] })
-
-                    const updatedAppointments = appointments.filter(appointment => appointment.appointmentId !== appointmentId);
-                    const appointmentsJSON = { data: updatedAppointments };
-                    await AsyncStorage.setItem('timeflexAppointments', JSON.stringify(appointmentsJSON))
-                        .then(dispatch(deleteAppointmentSuccess()))
-                        .catch(error => dispatch(deleteAppointmentFailure(error.message)));
-                } catch (error) {
-                    console.log(error)
-                }
+                await AsyncStorage.getItem('timeflexAppointmentsToDelete')
+                    .then(appointmentsJSON => appointmentsJSON ? JSON.parse(appointmentsJSON) : {})
+                    .then(obj => obj.data ? obj.data : [])
+                    .then(async appointmentsToDelete => {
+                        const updatedAppointmentsToDelete = [...appointmentsToDelete, { appointmentId: appointmentId }];
+                        const updatedAppointmentsToDeleteJSON = { data: updatedAppointmentsToDelete };
+                        await AsyncStorage.setItem('timeflexAppointmentsToDelete', JSON.stringify(updatedAppointmentsToDeleteJSON))
+                    })
+                    .then(dispatch(deleteAppointmentSuccess()));
             }
-        });
+        })
+            .then(dispatch(deleteAppointmentSuccess()))
+            .catch(error => console.log(error));
+        console.log('deleted appointment')
     };
 };
 
@@ -179,7 +257,7 @@ export const fetchAppointmentsRequest = () => {
 export const fetchAppointmentsSuccess = appointments => {
     return {
         type: 'FETCH_APPOINTMENTS_SUCCESS',
-        payload: [...appointments]
+        payload: appointments
     };
 };
 

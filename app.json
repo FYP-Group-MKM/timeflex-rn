@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "timeflex-rn",
-    "slug": "timeflex-rn",
+    "name": "TimeFlex",
+    "slug": "TimeFlex",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -17,7 +17,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.darren1208.timeflex-rn"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,7 +29,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "mycoolredirect",
+    "scheme": "timeflex",
     "description": ""
   }
 }

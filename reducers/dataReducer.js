@@ -17,7 +17,7 @@ const dataReducer = (state = initialState, action) => {
             return {
                 ...state,
                 loading: false,
-                appointments: [...action.payload],
+                appointments: action.payload,
                 error: ""
             };
         case 'FETCH_APPOINTMENTS_FAILURE':

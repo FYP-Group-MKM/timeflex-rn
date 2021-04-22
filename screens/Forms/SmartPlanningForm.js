@@ -9,7 +9,9 @@ import BottomSheet from 'reanimated-bottom-sheet';
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 
 import { connect } from 'react-redux';
-import { postAppointment, fetchAppointments } from '../../actions';
+import { postAppointment, loadLocalAppointments } from '../../actions';
+
+import smartPlanning from '../../smartPlanning';
 
 
 const SmartPlanningForm = (props) => {
@@ -56,33 +58,23 @@ const SmartPlanningForm = (props) => {
             });
         }
 
-        await fetch(`https://timeflex-web.herokuapp.com/appointments`, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                type: 'smart',
-                appointment: { ...appointment, googleId: props.user.googleId }
-            }),
-            credentials: 'include'
-        })
-            .then(res => res.json())
-            .then((res) => {
-                if (res.message === "NO_SOLUTION_AVAILABLE") {
-                    setLoading(false);
-                    setInvalidDateMsg('No solution available');
-                    setSnackbarVisible(true);
-                } else {
-                    props.fetchAppointments()
-                        .then(() => {
-                            props.sheetRef.current.snapTo(1);
-                            resetAppointment();
-                            setLoading(false);
-                        });
-                }
-            })
+        const result = smartPlanning(appointment, props.appointments);
+
+        if (!result) {
+            setLoading(false);
+            setInvalidDateMsg('No solution available');
+            setSnackbarVisible(true);
+            return;
+        }
+
+        await result.forEach(async newAppointment => {
+            await props.postAppointment(newAppointment);
+        });
+
+        props.loadLocalAppointments();
+        props.sheetRef.current.snapTo(1);
+        resetAppointment();
+        setLoading(false);
     };
 
     const resetAppointment = () => {
@@ -325,11 +317,12 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => ({
     user: state.data.user,
+    appointments: state.data.appointments,
 });
 
 const mapDispatchToProps = dispatch => ({
     postAppointment: (appointment) => dispatch(postAppointment(appointment)),
-    fetchAppointments: () => dispatch(fetchAppointments())
+    loadLocalAppointments: () => dispatch(loadLocalAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SmartPlanningForm);

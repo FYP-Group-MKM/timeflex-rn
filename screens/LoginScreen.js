@@ -3,13 +3,11 @@ import { StyleSheet, SafeAreaView, Image } from 'react-native';
 import { Button, Paragraph, Title, Subheading } from 'react-native-paper';
 
 import { connect } from 'react-redux';
-import { fetchAppointments, setUser } from '../actions';
+import { setUser } from '../actions';
 
 import * as Linking from 'expo-linking'
 import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import logo from '../assets/HKU.jpg'
-import { useAssets } from 'expo-asset';
 
 const LoginScreen = (props) => {
 
@@ -23,6 +21,7 @@ const LoginScreen = (props) => {
         try {
             let authResult = await WebBrowser.openAuthSessionAsync(`https://timeflex-web.herokuapp.com/expo-auth/google`, redirectUrl);
             const userURIComponent = authResult.url.replace('exp://exp.host/@darren1208/timeflex-rn/', '');
+            // const userURIComponent = authResult.url.replace('timeflex://', '');
             const userJSON = decodeURIComponent(userURIComponent);
             await AsyncStorage.setItem('timeflexUser', userJSON)
                 .then(props.setUser(JSON.parse(userJSON)))
@@ -81,7 +80,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     setUser: (user) => dispatch(setUser(user)),
-    fetchAppointments: () => dispatch(fetchAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoginScreen);

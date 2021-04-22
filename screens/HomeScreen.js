@@ -5,11 +5,13 @@ import { FAB, Portal, Appbar as PaperAppbar } from 'react-native-paper';
 import { Calendar } from 'react-native-big-calendar';
 
 import { connect } from 'react-redux';
-import { setCurrentDate, fetchAppointments } from '../actions';
+import { setCurrentDate, loadLocalAppointments, syncAppointments } from '../actions';
 
 import SimpleEventForm from './Forms/SimpleEventForm';
 import SmartPlanningForm from './Forms/SmartPlanningForm';
-import EditEventForm from './Forms/EditEventForm'
+import EditEventForm from './Forms/EditEventForm';
+
+import NetInfo from '@react-native-community/netinfo';
 
 const HomeScreen = (props) => {
     const simpleEventFormRef = React.useRef(null);
@@ -17,11 +19,16 @@ const HomeScreen = (props) => {
     const eventFormRef = React.useRef(null);
     const [fabOpen, setFabOpen] = useState(false);
     const [eventPressed, setEvent] = useState({});
+    const [isInternetReachable, setInternetReachable] = useState(NetInfo.fetch().then(state => state.isInternetReachable));
     const dateString = format(props.currentDate, 'MMM yyyy');
 
     useEffect(() => {
-        props.fetchAppointments();
-    }, []);
+        if (isInternetReachable) {
+            props.syncAppointments()
+        } else {
+            props.loadLocalAppointments();
+        }
+    }, [props.user.googleId]);
 
     const translatedAppointments = props.appointments.map(appointment => {
         const translatedAppointment = {
@@ -36,12 +43,11 @@ const HomeScreen = (props) => {
 
     const handleMenuButtonPress = () => {
         props.navigation.toggleDrawer();
-        fetchAppointments();
     };
 
     const handleTodayButtonPress = () => {
         props.setCurrentDate(new Date());
-        props.fetchAppointments();
+        props.loadLocalAppointments();
     };
 
     return (
@@ -70,11 +76,11 @@ const HomeScreen = (props) => {
                     icon={fabOpen ? 'close' : 'plus'}
                     fabStyle={styles.fab}
                     actions={[
-                        // {
-                        //     icon: 'school',
-                        //     label: 'Class',
-                        //     onPress: () => { },
-                        // },
+                        {
+                            icon: 'school',
+                            label: props.user.username,
+                            onPress: () => props.syncAppointments(),
+                        },
                         {
                             icon: 'calendar-search',
                             label: 'Smart Planning',
@@ -152,7 +158,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     setCurrentDate: (date) => dispatch(setCurrentDate(date)),
-    fetchAppointments: () => dispatch(fetchAppointments()),
+    loadLocalAppointments: () => dispatch(loadLocalAppointments()),
+    syncAppointments: () => dispatch(syncAppointments())
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);

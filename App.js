@@ -4,7 +4,7 @@ import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 
 import { connect } from 'react-redux';
-import { fetchAppointments, setUser } from './actions';
+import { setUser } from './actions';
 
 import HomeScreen from './screens/HomeScreen';
 import LogoutScreen from './screens/LogoutScreen';
@@ -17,8 +17,8 @@ const Drawer = createDrawerNavigator();
 const App = (props) => {
     useEffect(() => {
         AsyncStorage.getItem('timeflexUser')
-            .then(user => props.setUser(JSON.parse(user)))
-            .then(props.fetchAppointments());
+            .then(user => { if (user) props.setUser(JSON.parse(user)) })
+            .catch(error => console.log(error));
     }, []);
 
     const routes = ['week', '3days', 'day'].map(mode => {
@@ -29,7 +29,6 @@ const App = (props) => {
         if (mode === 'week') name = 'Week';
         return <Drawer.Screen key={mode} name={name} component={renderScreen} />;
     });
-
 
     return props.user.googleId ?
         <NavigationContainer >
@@ -48,7 +47,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     setUser: (user) => dispatch(setUser(user)),
-    fetchAppointments: () => dispatch(fetchAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(App);

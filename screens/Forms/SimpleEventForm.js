@@ -8,7 +8,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import ButtonDateTimePicker from './ButtonDateTimePicker';
 
 import { connect } from 'react-redux';
-import { postAppointment, fetchAppointments } from '../../actions';
+import { postAppointment, loadLocalAppointments } from '../../actions';
 
 const SimpleEventForm = (props) => {
     const [appointment, setAppointment] = useState({
@@ -37,17 +37,15 @@ const SimpleEventForm = (props) => {
         </View>
     );
 
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
         if (!appointmentIsValid()) return;
         setLoading(true);
-        await props.postAppointment({
-            type: 'simple',
-            appointment: { ...appointment, googleId: props.user.googleId }
-        });
-        setTimeout(() => props.fetchAppointments()
-            .then(resetAppointment())
-            .then(props.sheetRef.current.snapTo(1))
-            .then(setLoading(false)), 25);
+        props.postAppointment(appointment)
+            .then(res => props.loadLocalAppointments())
+            .catch(error => console.log(error));
+        resetAppointment();
+        props.sheetRef.current.snapTo(1);
+        setLoading(false);
     };
 
     const resetAppointment = () => {
@@ -244,7 +242,7 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
     postAppointment: (appointment) => dispatch(postAppointment(appointment)),
-    fetchAppointments: () => dispatch(fetchAppointments())
+    loadLocalAppointments: () => dispatch(loadLocalAppointments()),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SimpleEventForm);
