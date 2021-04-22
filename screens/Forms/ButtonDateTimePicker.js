@@ -1,7 +1,7 @@
 import format from 'date-fns/format';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { TextInput, Button, Switch, Title, Text } from 'react-native-paper';
+import { Button } from 'react-native-paper';
 
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 
