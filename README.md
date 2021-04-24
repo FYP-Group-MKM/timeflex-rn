@@ -7,4 +7,11 @@ import index from '../../index';
 
 registerRootComponent(index);
 ```
-2. Run npm start and expo will provide instructions
+2. Install the dependencies:
+```
+npm install
+```
+4. Start the running with a simulator
+```
+npm run ios
+```
