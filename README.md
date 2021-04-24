@@ -1,5 +1,5 @@
 #### Instructions
-1. In node_modules/expo/AppEntry.js, replace the whole file with the following:
+1.  In node_modules/expo/AppEntry.js, replace the whole file with the following:
 ```
 import registerRootComponent from 'expo/build/launch/registerRootComponent';
 
@@ -7,11 +7,15 @@ import index from '../../index';
 
 registerRootComponent(index);
 ```
-2. Install the dependencies:
+2.  Install the dependencies:
 ```
 npm install
 ```
-4. Start the running with a simulator
+3.  Run the app on Expo Go on a simulator
 ```
 npm run ios
+```
+4.  Or compile the app and install it on a simulator, by dragging the compiled app icon to the homescreen
+```
+expo build:ios -t simulator
 ```
