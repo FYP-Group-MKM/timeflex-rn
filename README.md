@@ -1,6 +1,7 @@
 #### Instructions
 1.  Install the dependencies:
 ```
+npm install -g expo-cli   // you have to install Expo CLI if you are new to it
 npm install
 ```
 2.  In node_modules/expo/AppEntry.js, replace the whole file with the following:
